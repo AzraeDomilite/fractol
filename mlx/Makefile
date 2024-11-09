@@ -13,7 +13,7 @@ all: $(NOM)
 $(NOM): $(OBJ)
 	@ar -r $(NOM) $(OBJ) > /dev/null 2>&1
 	@ranlib $(NOM) > /dev/null 2>&1
-	@echo "$(GREEN)Compilation of MLX successful! 😊$(RESET)"
+	@echo "$(GREEN)Compilation of MLX successful!       😊$(RESET)"
 
 %.o: %.c
 	@cc $(CFLAGS) -c -o $@ $< > /dev/null 2>&1

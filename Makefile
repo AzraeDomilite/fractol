@@ -33,7 +33,7 @@ all: $(LIBFT) $(PRINTF) $(MLX_LIB) $(NAME)
 
 $(NAME): $(OBJ_FILES)
 	@$(CC) $(CFLAGS) -o $(NAME) $(OBJ_FILES) $(LIBFT) $(PRINTF) $(MLX_LNK)
-	@echo "$(GREEN)Compilation of fractol successful! 😊$(RESET)"
+	@echo "$(GREEN)Compilation of fractol successful!   😊$(RESET)"
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	@$(CC) $(CFLAGS) $(MLX_INC) -o $@ -c $<
