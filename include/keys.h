@@ -1,17 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main2.c                                            :+:      :+:    :+:   */
+/*   keys.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/09 21:30:56 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/09 21:30:56 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/18 14:11:37 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/18 14:11:37 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef KEYS_H
 # define KEYS_H
+
 # define K_ESC			53
 # define K_R			15
 # define K_Q			12
@@ -27,8 +28,20 @@
 # define K_G			5
 # define K_Z			6
 # define K_X			7
-# define K_POINT		43
-# define K_COMMA		47
+# define K_C			8
+# define K_V			9
+# define K_NUM_1		83
+# define K_NUM_2		84
+# define K_NUM_3		85
+# define K_NUM_4		86
+# define K_NUM_5		87
+# define K_NUM_6		88
+# define K_NUM_7		89
+# define K_NUM_8		91
+# define K_NUM_9		92
+# define K_NUM_0		82
+# define K_POINT		47
+# define K_COMMA		43
 # define K_NUM_MULT		67
 # define K_NUM_DIV		75
 # define K_NUM_PLUS		69

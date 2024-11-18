@@ -1,12 +1,751 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
+/*   test.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/11/18 17:30:45 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/18 17:30:45 by blucken          ###   ########.ch       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "../include/fractol.h"
+#include "../include/keys.h"
+#include "../libs/libft/src/libft.h"
+#include "../libs/ft_printf/include/ft_printf.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#define WIN_WIDTH 1280
+#define WIN_HEIGHT 720
+#define ZOOM_IN 1.1
+#define ZOOM_OUT 0.9
+#define MOVE_STEP 20
+#define MAX_ITER 1000
+#define MIN_ITER 10
+#define DEFAULT_PREVIEW_ITER 100
+#define ESCAPE_RADIUS 4.0
+#define INITIAL_C_REAL -0.7
+#define INITIAL_C_IMAG 0.27015
+#define ITER_STEP 50
+#define USAGE_MSG "Usage: ./fractol <julia|mandelbrot|tricorn|burningship|lyapunov|newton>\n"
+#define ERROR_MSG_WINDOW "Error\nWindow creation failed\n"
+#define ERROR_MSG_IMAGE "Error\nImage creation failed\n"
+#define ERROR_MSG_LOOP "Error\nProgram failed on loop\n"
+#define PALETTE_COUNT 15
+#define LYAPUNOV_SEQUENCE "AB"
+
+typedef enum e_fractal_type {
+	JULIA,
+	MANDELBROT,
+	TRICORN,
+	BURNING_SHIP,
+	LYAPUNOV,
+	NEWTON
+}	t_fractal_type;
+
+typedef enum e_palette_type {
+	PALETTE_DERIVATIVE_BAILOUT,
+	PALETTE_STRIPES,
+	PALETTE_SMOOTH,
+	PALETTE_CLASSIC,
+	PALETTE_LOGARITHMIC,
+	PALETTE_HSV,
+	PALETTE_GRADIENT,
+	PALETTE_BLACK_WHITE,
+	PALETTE_ESCAPE_TIME,
+	PALETTE_CONTINUOUS_POTENTIAL,
+	PALETTE_FIRE,
+	PALETTE_INTERIOR_DISTANCE,
+	PALETTE_LCH,
+	PALETTE_EXP_CYCLIC_LCH_NO_SHADING,
+	PALETTE_EXP_CYCLIC_LCH_SHADING
+}	t_palette_type;
+
+typedef struct s_color {
+	int	r;
+	int	g;
+	int	b;
+}	t_color;
+
+typedef struct s_data {
+	void			*mlx;
+	void			*win;
+	void			*img;
+	char			*addr;
+	int				bpp;
+	int				line_len;
+	int				endian;
+	double			zoom;
+	double			offset_x;
+	double			offset_y;
+	double			c_real;
+	double			c_imag;
+	int				redraw;
+	int				fast_mode;
+	int				max_iter;
+	int				is_selecting;
+	int				select_start_x;
+	int				select_start_y;
+	int				select_end_x;
+	int				select_end_y;
+	t_fractal_type	fractal_type;
+	t_palette_type	palette_type;
+	t_color			base_color;
+}	t_data;
+
+typedef struct s_fractal_vars {
+	int		x;
+	int		iter;
+	double	c_real;
+	double	c_imag;
+	double	z_real;
+	double	z_imag;
+}	t_fractal_vars;
+
+typedef struct s_color_vars {
+	double	t;
+	double	l;
+	double	c;
+	double	h;
+	int		r;
+	int		g;
+	int		b;
+}	t_color_vars;
+
+/* Function prototypes */
+
+void	parse_arguments(int argc, char **argv, t_data *data);
+void	initialize_mlx(t_data *data);
+void	reset_view(t_data *data);
+void	exit_fractol(t_data *data);
+int		deal_key(int key, t_data *data);
+void	adjust_fractal_parameters(int key, t_data *data);
+void	handle_reset_and_exit(int key, t_data *data);
+void	handle_movement(int key, t_data *data);
+void	move_offset(t_data *data, double x_step, double y_step);
+void	handle_zoom(int key, t_data *data);
+void	handle_iter_adjustment(int key, t_data *data);
+void	switch_palette_next(t_data *data);
+void	switch_palette_prev(t_data *data);
+void	adjust_c_imag(t_data *data, double delta);
+void	adjust_c_real(t_data *data, double delta);
+void	adjust_base_color_component(t_data *data, int key);
+void	reset_base_color_component(t_data *data, int key);
+int		mouse_press(int button, int x, int y, t_data *data);
+int		mouse_move(int x, int y, t_data *data);
+int		mouse_release(int button, int x, int y, t_data *data);
+int		render_next_frame(t_data *data);
+void	draw_fractal_with_iter(t_data *data, int iter_count);
+void	draw_fractal(t_data *data, int iter_count);
+void	draw_fractal_line(t_data *data, int y,
+			double real_min, double imag_min, double scale, int iter_count);
+void	put_pixel(t_data *data, int x, int y, int color);
+void	draw_info_strings(t_data *data);
+void	draw_zoom_level(t_data *data);
+void	draw_selection_rectangle(t_data *data);
+void	get_sorted_selection(t_data *data, int *x_start, int *x_end,
+			int *y_start, int *y_end);
+void	draw_rectangle_edges(t_data *data, int x_start, int y_start,
+			int x_end, int y_end);
+void	zoom_to_selection(t_data *data);
+void	calculate_zoom_and_offset(t_data *data, int x_start, int x_end,
+			int y_start, int y_end);
+void	update_zoom_and_offset(t_data *data, double x_min, double x_max,
+			double y_min, double y_max);
+void	swap_int(int *a, int *b);
+int		compute_julia(t_data *data, double z_real, double z_imag,
+			double *final_z_real, double *final_z_imag, int iter_count);
+int		compute_mandelbrot(t_data *data, double c_real, double c_imag,
+			double *final_z_real, double *final_z_imag, int iter_count);
+int		compute_burning_ship(double c_real, double c_imag,
+			double *final_z_real, double *final_z_imag, int iter_count);
+int		compute_lyapunov(double x, double y, int iter_count);
+int		compute_newton(double z_real, double z_imag, int iter_count);
+int		get_color(int iter, t_data *data,
+			double z_real, double z_imag, int max_iter);
+int		get_color_stripes(int iter, t_data *data);
+int		get_color_smooth(int iter, t_data *data);
+int		get_color_classic(int iter, t_data *data);
+int		get_color_logarithmic(int iter, int max_iter, t_data *data);
+int		get_color_hsv(int iter, int max_iter, t_data *data);
+int		get_color_gradient(int iter, int max_iter, t_data *data);
+int		get_color_black_white(int iter, t_data *data);
+int		get_color_escape_time(int iter, int max_iter, t_data *data);
+int		get_color_continuous_potential(int iter, double z_real,
+			double z_imag, int max_iter, t_data *data);
+int		get_color_fire(int iter, int max_iter, t_data *data);
+int		get_color_derivative_bailout(int iter,
+			double z_real, double z_imag, t_data *data);
+int		get_color_interior_distance(int iter, double z_real,
+			double z_imag, int max_iter, t_data *data);
+int		get_color_lch(int iter, int max_iter, t_data *data);
+int		get_color_exp_cyclic_lch_no_shading(int iter, int max_iter,
+			t_data *data);
+int		get_color_exp_cyclic_lch_shading(int iter, int max_iter,
+			t_data *data);
+void	lch_to_rgb(double l, double c, double h_deg, int *r, int *g, int *b);
+void	lch_to_lab(double l, double c, double h_deg,
+			double *a, double *b_lab);
+void	lab_to_xyz(double l, double a, double b_lab,
+			double *x, double *y, double *z);
+void	xyz_to_rgb(double x, double y, double z, int *r, int *g, int *b);
+char	*ft_ftoa(double n, int precision);
+char	*ft_lltoa(long long n);
+static int	ft_numlen(long long n);
+char	*ft_strjoin_free(char *s1, char *s2, int free_s1);
+
+/* Main function */
+
+int	main(int argc, char **argv)
+{
+	t_data	data;
+
+	parse_arguments(argc, argv, &data);
+	initialize_mlx(&data);
+	reset_view(&data);
+	mlx_key_hook(data.win, deal_key, &data);
+	mlx_hook(data.win, 17, 0, (int (*)())exit_fractol, &data);
+	mlx_hook(data.win, 4, 0, mouse_press, &data);
+	mlx_hook(data.win, 5, 0, mouse_release, &data);
+	mlx_hook(data.win, 6, 0, mouse_move, &data);
+	mlx_loop_hook(data.mlx, render_next_frame, &data);
+	mlx_loop(data.mlx);
+	ft_printf(ERROR_MSG_LOOP);
+	exit(EXIT_FAILURE);
+}
+
+/* Function implementations */
+
+/* Parse command line arguments */
+void	parse_arguments(int argc, char **argv, t_data *data)
+{
+	if (argc != 2)
+	{
+		ft_printf(USAGE_MSG);
+		exit(EXIT_FAILURE);
+	}
+	if (ft_strcmp(argv[1], "julia") == 0)
+		data->fractal_type = JULIA;
+	else if (ft_strcmp(argv[1], "mandelbrot") == 0)
+		data->fractal_type = MANDELBROT;
+	else if (ft_strcmp(argv[1], "tricorn") == 0)
+		data->fractal_type = TRICORN;
+	else if (ft_strcmp(argv[1], "burningship") == 0)
+		data->fractal_type = BURNING_SHIP;
+	else if (ft_strcmp(argv[1], "lyapunov") == 0)
+		data->fractal_type = LYAPUNOV;
+	else if (ft_strcmp(argv[1], "newton") == 0)
+		data->fractal_type = NEWTON;
+	else
+	{
+		ft_printf(USAGE_MSG);
+		exit(EXIT_FAILURE);
+	}
+}
+
+/* Initialize MLX and create window */
+void	initialize_mlx(t_data *data)
+{
+	data->mlx = mlx_init();
+	if (!data->mlx)
+	{
+		ft_printf("Error\nFailed to initialize MLX\n");
+		exit(EXIT_FAILURE);
+	}
+	data->win = mlx_new_window(data->mlx, WIN_WIDTH, WIN_HEIGHT, "Fract'ol");
+	if (!data->win)
+	{
+		ft_printf(ERROR_MSG_WINDOW);
+		exit(EXIT_FAILURE);
+	}
+	data->img = NULL;
+}
+
+/* Reset view to initial parameters */
+void	reset_view(t_data *data)
+{
+	data->zoom = 1.0;
+	data->offset_x = 0;
+	data->offset_y = 0;
+	data->c_real = INITIAL_C_REAL;
+	data->c_imag = INITIAL_C_IMAG;
+	data->redraw = 1;
+	data->fast_mode = 0;
+	data->max_iter = 100;
+	data->palette_type = PALETTE_STRIPES;
+	data->base_color.r = 255;
+	data->base_color.g = 255;
+	data->base_color.b = 255;
+	ft_printf("Resetting view: c_real = %lf, c_imag = %lf\n",
+		data->c_real, data->c_imag);
+}
+
+/* Exit the program and free resources */
+void	exit_fractol(t_data *data)
+{
+	if (data->img)
+		mlx_destroy_image(data->mlx, data->img);
+	if (data->win && data->mlx)
+		mlx_destroy_window(data->mlx, data->win);
+	exit(EXIT_SUCCESS);
+}
+
+/* Handle key events */
+int	deal_key(int key, t_data *data)
+{
+	adjust_fractal_parameters(key, data);
+	handle_reset_and_exit(key, data);
+	handle_movement(key, data);
+	handle_zoom(key, data);
+	handle_iter_adjustment(key, data);
+	data->fast_mode = 1;
+	ft_printf("Key pressed: %d, max_iter: %d, palette_type: %d\n",
+		key, data->max_iter, data->palette_type);
+	return (0);
+}
+
+/* Adjust fractal parameters based on key input */
+void	adjust_fractal_parameters(int key, t_data *data)
+{
+	if (key == K_Z)
+		switch_palette_prev(data);
+	else if (key == K_X)
+		switch_palette_next(data);
+	else if (key == K_O)
+		adjust_c_imag(data, 0.01);
+	else if (key == K_I)
+		adjust_c_imag(data, -0.01);
+	else if (key == K_K)
+		adjust_c_real(data, 0.01);
+	else if (key == K_L)
+		adjust_c_real(data, -0.01);
+	else if (key == K_NUM_7 || key == K_NUM_9
+		|| key == K_NUM_4 || key == K_NUM_6
+		|| key == K_NUM_1 || key == K_NUM_3)
+		adjust_base_color_component(data, key);
+	else if (key == K_NUM_8 || key == K_NUM_5 || key == K_NUM_2)
+		reset_base_color_component(data, key);
+}
+
+/* Handle reset and exit keys */
+void	handle_reset_and_exit(int key, t_data *data)
+{
+	if (key == K_R)
+		reset_view(data);
+	else if (key == K_ESC || key == K_Q)
+		exit_fractol(data);
+}
+
+/* Handle movement keys */
+void	handle_movement(int key, t_data *data)
+{
+	if (key == K_S || key == K_DOWN)
+		move_offset(data, 0, MOVE_STEP);
+	else if (key == K_W || key == K_UP)
+		move_offset(data, 0, -MOVE_STEP);
+	else if (key == K_D || key == K_RIGHT)
+		move_offset(data, MOVE_STEP, 0);
+	else if (key == K_A || key == K_LEFT)
+		move_offset(data, -MOVE_STEP, 0);
+}
+
+/* Move the view offset */
+void	move_offset(t_data *data, double x_step, double y_step)
+{
+	data->offset_x += x_step;
+	data->offset_y += y_step;
+	data->redraw = 1;
+}
+
+/* Handle zoom keys */
+void	handle_zoom(int key, t_data *data)
+{
+	if (key == K_NUM_PLUS)
+	{
+		data->zoom *= ZOOM_IN;
+		data->redraw = 1;
+	}
+	else if (key == K_NUM_MINUS)
+	{
+		data->zoom *= ZOOM_OUT;
+		data->redraw = 1;
+	}
+}
+
+/* Handle iteration adjustment keys */
+void	handle_iter_adjustment(int key, t_data *data)
+{
+	if (key == K_F)
+	{
+		if (data->max_iter - ITER_STEP >= MIN_ITER)
+			data->max_iter -= ITER_STEP;
+		else
+			data->max_iter = MIN_ITER;
+		data->redraw = 1;
+	}
+	else if (key == K_G)
+	{
+		if (data->max_iter + ITER_STEP <= MAX_ITER)
+			data->max_iter += ITER_STEP;
+		else
+			data->max_iter = MAX_ITER;
+		data->redraw = 1;
+	}
+}
+
+/* Switch to the next color palette */
+void	switch_palette_next(t_data *data)
+{
+	data->palette_type = (data->palette_type + 1) % PALETTE_COUNT;
+	data->redraw = 1;
+}
+
+/* Switch to the previous color palette */
+void	switch_palette_prev(t_data *data)
+{
+	if (data->palette_type == 0)
+		data->palette_type = PALETTE_COUNT - 1;
+	else
+		data->palette_type--;
+	data->redraw = 1;
+}
+
+/* Adjust imaginary part of c */
+void	adjust_c_imag(t_data *data, double delta)
+{
+	if (data->fractal_type == JULIA)
+		data->c_imag += delta;
+	else
+		data->offset_y += delta;
+	data->redraw = 1;
+}
+
+/* Adjust real part of c */
+void	adjust_c_real(t_data *data, double delta)
+{
+	if (data->fractal_type == JULIA)
+		data->c_real += delta;
+	else
+		data->offset_x += delta;
+	data->redraw = 1;
+}
+
+/* Adjust base color component */
+void	adjust_base_color_component(t_data *data, int key)
+{
+	if (key == K_NUM_7)
+	{
+		if (data->base_color.r - 15 < 0)
+			data->base_color.r = 0;
+		else
+			data->base_color.r -= 15;
+	}
+	else if (key == K_NUM_9)
+	{
+		if (data->base_color.r + 15 > 255)
+			data->base_color.r = 255;
+		else
+			data->base_color.r += 15;
+	}
+	else if (key == K_NUM_4)
+	{
+		if (data->base_color.g - 15 < 0)
+			data->base_color.g = 0;
+		else
+			data->base_color.g -= 15;
+	}
+	else if (key == K_NUM_6)
+	{
+		if (data->base_color.g + 15 > 255)
+			data->base_color.g = 255;
+		else
+			data->base_color.g += 15;
+	}
+	else if (key == K_NUM_1)
+	{
+		if (data->base_color.b - 15 < 0)
+			data->base_color.b = 0;
+		else
+			data->base_color.b -= 15;
+	}
+	else if (key == K_NUM_3)
+	{
+		if (data->base_color.b + 15 > 255)
+			data->base_color.b = 255;
+		else
+			data->base_color.b += 15;
+	}
+	data->redraw = 1;
+}
+
+/* Reset base color component */
+void	reset_base_color_component(t_data *data, int key)
+{
+	if (key == K_NUM_8)
+		data->base_color.r = 255;
+	else if (key == K_NUM_5)
+		data->base_color.g = 255;
+	else if (key == K_NUM_2)
+		data->base_color.b = 255;
+	data->redraw = 1;
+}
+
+/* Mouse press event */
+int	mouse_press(int button, int x, int y, t_data *data)
+{
+	if (button == 1)
+	{
+		data->is_selecting = 1;
+		data->select_start_x = x;
+		data->select_start_y = y;
+		data->select_end_x = x;
+		data->select_end_y = y;
+	}
+	return (0);
+}
+
+/* Mouse move event */
+int	mouse_move(int x, int y, t_data *data)
+{
+	if (data->is_selecting)
+	{
+		data->select_end_x = x;
+		data->select_end_y = y;
+		data->redraw = 1;
+	}
+	return (0);
+}
+
+/* Mouse release event */
+int	mouse_release(int button, int x, int y, t_data *data)
+{
+	if (button == 1 && data->is_selecting)
+	{
+		data->is_selecting = 0;
+		data->select_end_x = x;
+		data->select_end_y = y;
+		zoom_to_selection(data);
+	}
+	return (0);
+}
+
+/* Render the next frame */
+int	render_next_frame(t_data *data)
+{
+	if (!data->redraw)
+		return (0);
+	if (data->fast_mode)
+		draw_fractal_with_iter(data, DEFAULT_PREVIEW_ITER);
+	else
+		draw_fractal_with_iter(data, data->max_iter);
+	data->fast_mode = 0;
+	data->redraw = 0;
+	return (0);
+}
+
+/* Draw the fractal with a given iteration count */
+void	draw_fractal_with_iter(t_data *data, int iter_count)
+{
+	if (data->img)
+		mlx_destroy_image(data->mlx, data->img);
+	data->img = mlx_new_image(data->mlx, WIN_WIDTH, WIN_HEIGHT);
+	if (!data->img)
+	{
+		ft_printf(ERROR_MSG_IMAGE);
+		exit_fractol(data);
+	}
+	data->addr = mlx_get_data_addr(data->img, &data->bpp,
+			&data->line_len, &data->endian);
+	draw_fractal(data, iter_count);
+	if (data->is_selecting)
+		draw_selection_rectangle(data);
+	mlx_put_image_to_window(data->mlx, data->win, data->img, 0, 0);
+	draw_info_strings(data);
+}
+
+/* Draw the fractal */
+void	draw_fractal(t_data *data, int iter_count)
+{
+	int		y;
+	double	scale;
+	double	real_min;
+	double	imag_min;
+
+	scale = 4.0 / (WIN_WIDTH * data->zoom);
+	real_min = data->offset_x - (WIN_WIDTH / 2.0) * scale;
+	imag_min = data->offset_y - (WIN_HEIGHT / 2.0) * scale;
+	y = 0;
+	while (y < WIN_HEIGHT)
+	{
+		draw_fractal_line(data, y, real_min, imag_min, scale, iter_count);
+		y++;
+	}
+}
+
+/* Draw a line of the fractal */
+void	draw_fractal_line(t_data *data, int y,
+	double real_min, double imag_min, double scale, int iter_count)
+{
+	t_fractal_vars	vars;
+
+	vars.x = 0;
+	while (vars.x < WIN_WIDTH)
+	{
+		vars.c_real = real_min + vars.x * scale;
+		vars.c_imag = imag_min + y * scale;
+		if (data->fractal_type == JULIA)
+		{
+			vars.z_real = vars.c_real;
+			vars.z_imag = vars.c_imag;
+			vars.iter = compute_julia(data, vars.z_real, vars.z_imag,
+					&vars.z_real, &vars.z_imag, iter_count);
+		}
+		else if (data->fractal_type == MANDELBROT
+			|| data->fractal_type == TRICORN)
+		{
+			vars.iter = compute_mandelbrot(data, vars.c_real, vars.c_imag,
+					&vars.z_real, &vars.z_imag, iter_count);
+		}
+		else if (data->fractal_type == BURNING_SHIP)
+		{
+			vars.iter = compute_burning_ship(vars.c_real, vars.c_imag,
+					&vars.z_real, &vars.z_imag, iter_count);
+		}
+		else if (data->fractal_type == LYAPUNOV)
+		{
+			vars.iter = compute_lyapunov(vars.c_real, vars.c_imag, iter_count);
+		}
+		else if (data->fractal_type == NEWTON)
+		{
+			vars.iter = compute_newton(vars.c_real, vars.c_imag, iter_count);
+		}
+		put_pixel(data, vars.x, y, get_color(vars.iter,
+				data, vars.z_real, vars.z_imag, data->max_iter));
+		vars.x++;
+	}
+}
+
+/* Draw information strings on the window */
+void	draw_info_strings(t_data *data)
+{
+	const char	*palette_names[PALETTE_COUNT] = {
+		"Derivative Bailout", "Stripes", "Smooth", "Classic",
+		"Logarithmic", "HSV", "Gradient", "Black & White",
+		"Escape Time", "Continuous Potential", "Fire",
+		"Interior Distance", "LCH Coloring",
+		"Exp Cyclic LCH No Shading", "Exp Cyclic LCH Shading"
+	};
+	mlx_string_put(data->mlx, data->win, 10, 10, 0xFFFFFF,
+		"Fract'ol - 42 Project");
+	mlx_string_put(data->mlx, data->win, 10, 30, 0xFFFFFF,
+		"Press R to reset view");
+	mlx_string_put(data->mlx, data->win, 10, 50, 0xFFFFFF,
+		"Use arrow keys or WASD to move");
+	mlx_string_put(data->mlx, data->win, 10, 70, 0xFFFFFF,
+		"Use + and - to zoom");
+	mlx_string_put(data->mlx, data->win, 10, 90, 0xFFFFFF,
+		"Palette: ");
+	mlx_string_put(data->mlx, data->win, 100, 90, 0xFFFFFF,
+		(char *)palette_names[data->palette_type]);
+	draw_zoom_level(data);
+}
+
+/* Draw the zoom level */
+void	draw_zoom_level(t_data *data)
+{
+	char	*str;
+	char	*temp;
+
+	temp = ft_ftoa(data->zoom, 6);
+	str = ft_strjoin("Zoom: ", temp);
+	free(temp);
+	mlx_string_put(data->mlx, data->win, 10, 110, 0xFFFFFF, str);
+	free(str);
+}
+
+/* Draw the selection rectangle */
+void	draw_selection_rectangle(t_data *data)
+{
+	int	x_start;
+	int	y_start;
+	int	x_end;
+	int	y_end;
+
+	get_sorted_selection(data, &x_start, &x_end, &y_start, &y_end);
+	draw_rectangle_edges(data, x_start, y_start, x_end, y_end);
+}
+
+/* Get sorted selection coordinates */
+void	get_sorted_selection(t_data *data, int *x_start, int *x_end,
+	int *y_start, int *y_end)
+{
+	*x_start = data->select_start_x;
+	*y_start = data->select_start_y;
+	*x_end = data->select_end_x;
+	*y_end = data->select_end_y;
+	if (*x_start > *x_end)
+		swap_int(x_start, x_end);
+	if (*y_start > *y_end)
+		swap_int(y_start, y_end);
+}
+
+/* Draw the edges of the rectangle */
+void	draw_rectangle_edges(t_data *data, int x_start, int y_start,
+	int x_end, int y_end)
+{
+	int	x;
+	int	y;
+
+	x = x_start;
+	while (x <= x_end)
+	{
+		put_pixel(data, x, y_start, 0xFFFFFF);
+		put_pixel(data, x, y_end, 0xFFFFFF);
+		x++;
+	}
+	y = y_start;
+	while (y <= y_end)
+	{
+		put_pixel(data, x_start, y, 0xFFFFFF);
+		put_pixel(data, x_end, y, 0xFFFFFF);
+		y++;
+	}
+}
+
+/* Put a pixel on the image */
+void	put_pixel(t_data *data, int x, int y, int color)
+{
+	char	*dst;
+
+	if (x >= 0 && x < WIN_WIDTH && y >= 0 && y < WIN_HEIGHT)
+	{
+		dst = data->addr + (y * data->line_len + x * (data->bpp / 8));
+		*(unsigned int *)dst = color;
+	}
+}
+
+/* Swap two integers */
+void	swap_int(int *a, int *b)
+{
+	int	temp;
+
+	temp = *a;
+	*a = *b;
+	*b = temp;
+}
+
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
 /*   fractol.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: yourusername <yourusername@student.42.fr>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 10:00:00 by yourusername      #+#    #+#             */
-/*   Updated: 2024/11/18 17:42:08 by yourusername     ###   ########.fr       */
+/*   Updated: 2023/10/17 12:00:00 by yourusername     ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,6 +956,8 @@ int	main(int argc, char **argv)
 	ft_printf(ERROR_MSG_LOOP);
 	exit(EXIT_FAILURE);
 }
+
+/* Function implementations */
 
 /* Parse command line arguments */
 void	parse_arguments(int argc, char **argv, t_data *data)
@@ -1004,7 +1745,6 @@ int	get_color_logarithmic(int iter, int max_iter, t_data *data)
 	double	normalized;
 	int		color;
 
-	(void)data;
 	if (iter < max_iter)
 		normalized = log((double)iter) / log((double)max_iter);
 	else
@@ -1173,8 +1913,6 @@ int	get_color_fire(int iter, int max_iter, t_data *data)
 	int		g;
 	int		b;
 
-	(void)data;
-	(void)iter;
 	t = (double)iter / max_iter;
 	r = (int)(255 * pow(t, 0.3));
 	g = (int)(255 * pow(t, 1.0));
@@ -1189,8 +1927,6 @@ int	get_color_derivative_bailout(int iter,
 	double	magnitude;
 	int		color;
 
-	(void)data;
-	(void)iter;
 	magnitude = sqrt(z_real * z_real + z_imag * z_imag);
 	color = (int)(255 * (1 - exp(-magnitude)));
 	return ((color << 16) | (color << 8) | color);
@@ -1207,8 +1943,6 @@ int	get_color_interior_distance(int iter, double z_real, double z_imag,
 	int		g;
 	int		b;
 
-	(void)data;
-	(void)iter;
 	if (iter == max_iter)
 	{
 		distance = sqrt(z_real * z_real + z_imag * z_imag);
@@ -1232,7 +1966,6 @@ int	get_color_lch(int iter, int max_iter, t_data *data)
 {
 	t_color_vars	vars;
 
-	(void)data;
 	vars.t = (double)iter / max_iter;
 	vars.l = 50 + 50 * sin(3.1415 * vars.t);
 	vars.c = 50;
@@ -1295,7 +2028,7 @@ void	lch_to_lab(double l, double c, double h_deg,
 	double *a, double *b_lab)
 {
 	double	h_rad;
-	(void)l;
+
 	h_rad = h_deg * (M_PI / 180.0);
 	*a = cos(h_rad) * c;
 	*b_lab = sin(h_rad) * c;

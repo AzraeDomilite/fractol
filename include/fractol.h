@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/09 13:30:56 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/09 13:33:37 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/18 17:24:09 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/18 17:26:05 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,5 @@
 # include <unistd.h>
 # include <math.h>
 # include <stdlib.h>
-
-# define WIN_WIDTH 1280
-# define WIN_HEIGHT 720
-
-
-
 
 #endif
