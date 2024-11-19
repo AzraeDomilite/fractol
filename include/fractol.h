@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   fractol.h                                          :+:      :+:    :+:   */
+/*   main2.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/19 15:34:08 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/19 15:36:16 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/19 21:38:06 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/19 21:47:24 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include <math.h>
 # include <stdlib.h>
 # include <pthread.h>
+#include <complex.h>
 
 /* ************************************************************************** */
 /*                                   WINDOW                                   */
@@ -27,6 +28,8 @@
 
 # define WIN_WIDTH 800
 # define WIN_HEIGHT 600
+# define FULLSCREEN_WIDTH	1920
+# define FULLSCREEN_HEIGHT	1080
 
 /* ************************************************************************** */
 /*                                ERROR MESSAGES                              */
@@ -48,7 +51,7 @@
 /* ************************************************************************** */
 
 /* Iteration Settings */
-# define MAX_ITER 1000
+# define MAX_ITER 10000
 # define MIN_ITER 10
 # define ITER_STEP 50
 # define DEFAULT_PREVIEW_ITER 100
@@ -106,7 +109,7 @@
 /*                                   COLORS                                   */
 /* ************************************************************************** */
 
-# define PALETTE_COUNT 15
+# define PALETTE_COUNT 17
 # define MAX_COLOR_VALUE 255
 # define COLOR_WHITE 0xFFFFFF
 # define COLOR_BLACK 0x000000
@@ -160,6 +163,17 @@
 # define K_X			7
 # define K_C			8
 # define K_V			9
+# define K_H			4
+# define K_1			18
+# define K_2			19
+# define K_3			20
+# define K_4			21
+# define K_5			23
+# define K_6			22
+# define K_7			26
+# define K_8			28
+# define K_9			25
+# define K_0			29
 # define K_NUM_1		83
 # define K_NUM_2		84
 # define K_NUM_3		85
@@ -191,6 +205,8 @@ struct s_data;
 
 typedef struct s_data t_data;
 
+typedef struct { unsigned char r, g, b; } colour;
+
 typedef enum e_fractal_type
 {
 	JULIA,
@@ -210,10 +226,14 @@ typedef struct s_trajectory
 
 typedef struct s_thread_data
 {
-	t_data		*data;
+	t_data			*data;
 	unsigned int	seed;
-	int			samples;
+	int				samples;
+	double			*traj_real;
+	double			*traj_imag;
+	unsigned int	*local_histogram;
 }	t_thread_data;
+
 
 typedef enum e_palette_type
 {
@@ -231,8 +251,11 @@ typedef enum e_palette_type
 	PALETTE_LCH,
 	PALETTE_EXP_CYCLIC_LCH_NO_SHADING,
 	PALETTE_EXP_CYCLIC_LCH_SHADING,
-	PALETTE_DERIVATIVE_BAILOUT
+	PALETTE_DERIVATIVE_BAILOUT,
+	PALETTE_DWELL_GRADIENT,
+	PALETTE_CUSTOM_INTERIOR
 }	t_palette_type;
+
 
 typedef struct s_color
 {
@@ -243,38 +266,55 @@ typedef struct s_color
 
 typedef struct s_data
 {
-    void			*mlx;
-    void			*win;
-    void			*img;
-    char			*addr;
-    int				bpp;
-    int				line_len;
-    int				endian;
-    double			zoom;
-    double			offset_x;
-    double			offset_y;
-    double			c_real;
-    double			c_imag;
-    int				redraw;
-    int				fast_mode;
-    int				max_iter;
-    int				is_selecting;
-    int				select_start_x;
-    int				select_start_y;
-    int				select_end_x;
-    int				select_end_y;
-    t_fractal_type	fractal_type;
-    t_palette_type	palette_type;
-    t_color			base_color;
-    pthread_mutex_t	histogram_mutex;
-    unsigned int	*histogram;
-    int				samples;
-    double			real_min;
-    double			imag_min;
-    double			scale;
-    int				y_start;
-    int				y_end;
-    int				iter_count;
+	void			*mlx;
+	void			*win;
+	void			*img;
+	char			*addr;
+	int				bpp;
+	int				line_len;
+	int				endian;
+	double			zoom;
+	double			offset_x;
+	double			offset_y;
+	double			c_real;
+	double			c_imag;
+	int				redraw;
+	int				fast_mode;
+	int				max_iter;
+	int				is_selecting;
+	int				select_start_x;
+	int				select_start_y;
+	int				select_end_x;
+	int				select_end_y;
+	t_fractal_type	fractal_type;
+	t_palette_type	palette_type;
+	t_color			base_color;
+	pthread_mutex_t	histogram_mutex;
+	unsigned int	*histogram;
+	int				samples;
+	double			real_min;
+	double			imag_min;
+	double			scale;
+	int				y_start;
+	int				y_end;
+	int				iter_count;
+	double			buddha_real_min;
+	double			buddha_real_max;
+	double			buddha_imag_min;
+	double			buddha_imag_max;
+	double			branch_factor;
+	double			branch_offset;
+	double			branch_base;
+	double			line_width_base;
+	double			line_brightness;
+	double			cell_brightness;
+	double			base_saturation;
+	int				overlay_enabled;
+	int				is_fullscreen;
+	int				original_width;
+	int				original_height;
+	int				width;
+	int				height;
 }	t_data;
 
 typedef struct s_fractal_vars
@@ -380,7 +420,12 @@ int		get_color_interior_distance(int iter, double z_real,
 			double z_imag, int max_iter, t_data *data);
 int		get_color_lch(int iter, int max_iter, t_data *data);
 int		get_color_exp_cyclic_lch_no_shading(int iter, int max_iter, t_data *data);
+int		get_color_custom_interior(int iter, int max_iter, t_data *data, double z_real, double z_imag);
 int		get_color_exp_cyclic_lch_shading(int iter, int max_iter, t_data *data);
+int		get_color_dwell_gradient(int iter, int max_iter, t_data *data, double z_real, double z_imag);
+double _Complex	m_dwell_gradient(int N, double R, double s, double d, double _Complex c);
+double	m_continuous_dwell(int N, double R, double _Complex c);
+void	dwell_gradient(int width, int height, int maxiter, int i, int j, const int *counts, unsigned char *pixel, t_data *data);
 
 /* Fractal computation */
 int		compute_julia(t_data *data, t_fractal_vars *vars, int iter_count);
@@ -407,10 +452,10 @@ int		ft_numlen(long long n);
 void	process_buddhabrot_point(t_data *data, double c_real, double c_imag);
 void	zoom_to_selection(t_data *data);
 void	calculate_zoom_and_offset(t_data *data, int x_start, int x_end,
-            int y_start, int y_end);
-void update_histogram(t_data *data, double *traj_real, double *traj_imag, int length);
+			int y_start, int y_end);
+void		update_histogram(t_data *data, double *traj_real, double *traj_imag, int length);
 void	update_zoom_and_offset(t_data *data, double x_min, double x_max,
-            double y_min, double y_max);
+			double y_min, double y_max);
 void	render_buddhabrot_image(t_data *data);
 void	*process_buddhabrot_section(void *arg);
 void	process_point(t_data *data, double c_real, double c_imag);
@@ -418,4 +463,12 @@ unsigned int	find_max_value(unsigned int *array, int size);
 void	cleanup_buddhabrot(t_data *data, pthread_t *threads,
 			t_thread_data *thread_data);
 void	render_buddhabrot(t_data *data);
+void	merge_local_histograms(t_data *data, t_thread_data *thread_data, int num_threads);
+int		mouse_press(int button, int x, int y, t_data *data);
+int		mouse_move(int x, int y, t_data *data);
+int		mouse_release(int button, int x, int y, t_data *data);
+void	enter_fullscreen(t_data *data);
+void	exit_fullscreen(t_data *data);
+void render_buddhabrot_fixed_color(t_data *data);
+
 #endif

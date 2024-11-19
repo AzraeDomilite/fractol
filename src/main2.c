@@ -5,14 +5,49 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/19 15:23:09 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/19 15:37:12 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/19 21:48:02 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/19 21:58:56 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fractol.h"
 
 pthread_mutex_t	g_histogram_mutex = PTHREAD_MUTEX_INITIALIZER;
+const double pi = 3.141592653589793;
+
+static void	init_data_colors(t_data *data)
+{
+	data->palette_type = PALETTE_CUSTOM_INTERIOR;
+	data->base_color.r = MAX_COLOR_VALUE;
+	data->base_color.g = MAX_COLOR_VALUE;
+	data->base_color.b = MAX_COLOR_VALUE;
+	data->line_brightness = 0.0;
+	data->cell_brightness = 0.75;
+	data->base_saturation = 0.25;
+}
+
+static void	init_data_dimensions(t_data *data)
+{
+	data->buddha_real_min = BUDDHA_REAL_MIN;
+	data->buddha_real_max = BUDDHA_REAL_MAX;
+	data->buddha_imag_min = BUDDHA_IMAG_MIN;
+	data->buddha_imag_max = BUDDHA_IMAG_MAX;
+	data->original_width = WIN_WIDTH;
+	data->original_height = WIN_HEIGHT;
+	data->width = WIN_WIDTH;
+	data->height = WIN_HEIGHT;
+}
+
+static void	init_data_params(t_data *data)
+{
+	data->branch_factor = 2.0;
+	data->branch_offset = 1.0;
+	data->branch_base = 3.0;
+	data->line_width_base = 0.25;
+	data->overlay_enabled = 1;
+	data->fast_mode = 1;
+	data->is_fullscreen = 0;
+}
 
 void	init_data(t_data *data)
 {
@@ -23,10 +58,9 @@ void	init_data(t_data *data)
 	data->redraw = 1;
 	data->max_iter = DEFAULT_PREVIEW_ITER;
 	data->fractal_type = JULIA;
-	data->palette_type = PALETTE_FIRE;
-	data->base_color.r = MAX_COLOR_VALUE;
-	data->base_color.g = MAX_COLOR_VALUE;
-	data->base_color.b = MAX_COLOR_VALUE;
+	init_data_colors(data);
+	init_data_dimensions(data);
+	init_data_params(data);
 	if (pthread_mutex_init(&data->histogram_mutex, NULL) != 0)
 	{
 		ft_printf(ERROR_MUTEX_INIT);
@@ -123,6 +157,35 @@ void	exit_fractol(t_data *data)
 	exit(EXIT_SUCCESS);
 }
 
+static void	handle_fast_mode(t_data *data)
+{
+	data->fast_mode = !data->fast_mode;
+	data->redraw = 1;
+	if (data->fast_mode)
+		ft_printf("Mode Rapide Activé\n");
+	else
+		ft_printf("Mode Rapide Désactivé\n");
+}
+
+static void	handle_overlay(t_data *data)
+{
+	data->overlay_enabled = !data->overlay_enabled;
+	data->redraw = 1;
+	if (data->overlay_enabled)
+		ft_printf("Overlay Activé\n");
+	else
+		ft_printf("Overlay Désactivé\n");
+}
+
+static void	handle_screen_mode(t_data *data)
+{
+	if (data->is_fullscreen)
+		exit_fullscreen(data);
+	else
+		enter_fullscreen(data);
+	data->redraw = 1;
+}
+
 int	deal_key(int key, t_data *data)
 {
 	adjust_fractal_parameters(key, data);
@@ -130,8 +193,59 @@ int	deal_key(int key, t_data *data)
 	handle_movement(key, data);
 	handle_zoom(key, data);
 	handle_iter_adjustment(key, data);
-	data->fast_mode = 1;
+	if (key == K_1)
+		handle_fast_mode(data);
+	if (key == K_H)
+		handle_overlay(data);
+	if (key == K_0)
+		handle_screen_mode(data);
 	return (0);
+}
+
+void	enter_fullscreen(t_data *data)
+{
+	if (data->is_fullscreen)
+		return ;
+	mlx_destroy_image(data->mlx, data->img);
+	mlx_destroy_window(data->mlx, data->win);
+	data->win = mlx_new_window(data->mlx, FULLSCREEN_WIDTH, FULLSCREEN_HEIGHT, "Fract'ol - Plein Écran");
+	if (!data->win)
+	{
+		ft_printf(ERROR_MSG_WINDOW);
+		exit(EXIT_FAILURE);
+	}
+	data->img = mlx_new_image(data->mlx, FULLSCREEN_WIDTH, FULLSCREEN_HEIGHT);
+	data->addr = mlx_get_data_addr(data->img, &data->bpp, &data->line_len, &data->endian);
+	data->width = FULLSCREEN_WIDTH;
+	data->height = FULLSCREEN_HEIGHT;
+	data->zoom = 1.0;
+	data->offset_x = 0.0;
+	data->offset_y = 0.0;
+	data->is_fullscreen = 1;
+	render_next_frame(data);
+}
+
+void	exit_fullscreen(t_data *data)
+{
+	if (!data->is_fullscreen)
+		return ;
+	mlx_destroy_image(data->mlx, data->img);
+	mlx_destroy_window(data->mlx, data->win);
+	data->win = mlx_new_window(data->mlx, data->original_width, data->original_height, "Fract'ol");
+	if (!data->win)
+	{
+		ft_printf(ERROR_MSG_WINDOW);
+		exit(EXIT_FAILURE);
+	}
+	data->img = mlx_new_image(data->mlx, data->original_width, data->original_height);
+	data->addr = mlx_get_data_addr(data->img, &data->bpp, &data->line_len, &data->endian);
+	data->width = data->original_width;
+	data->height = data->original_height;
+	data->zoom = 1.0;
+	data->offset_x = 0.0;
+	data->offset_y = 0.0;
+	data->is_fullscreen = 0;
+	render_next_frame(data);
 }
 
 void	adjust_fractal_parameters(int key, t_data *data)
@@ -181,27 +295,40 @@ void	handle_movement(int key, t_data *data)
 
 void	move_offset(t_data *data, double x_factor, double y_factor)
 {
-	data->offset_x += x_factor / data->zoom;
-	data->offset_y += y_factor / data->zoom;
+	if (data->fractal_type == BUDDHABROT)
+	{
+		double x_shift = x_factor * (data->buddha_real_max - data->buddha_real_min);
+		double y_shift = y_factor * (data->buddha_imag_max - data->buddha_imag_min);
+		data->buddha_real_min += x_shift;
+		data->buddha_real_max += x_shift;
+		data->buddha_imag_min += y_shift;
+		data->buddha_imag_max += y_shift;
+	}
+	else
+	{
+		double x_shift = x_factor * (4.0 / data->zoom);
+		double y_shift = y_factor * (3.0 / data->zoom);
+		data->offset_x += x_shift;
+		data->offset_y += y_shift;
+	}
 	data->redraw = 1;
 }
 
-void	handle_zoom(int key, t_data *data)
+void handle_zoom(int key, t_data *data)
 {
-	double	center_re;
-	double	center_im;
+	double zoom_factor = (key == K_NUM_PLUS) ? ZOOM_FACTOR : 1.0 / ZOOM_FACTOR;
+	double center_x = (data->buddha_real_min + data->buddha_real_max) / 2.0;
+	double center_y = (data->buddha_imag_min + data->buddha_imag_max) / 2.0;
+	double width = (data->buddha_real_max - data->buddha_real_min) / zoom_factor;
+	double height = (data->buddha_imag_max - data->buddha_imag_min) / zoom_factor;
 
-	if (key == K_NUM_PLUS || key == K_NUM_MINUS)
-	{
-		center_re = data->offset_x;
-		center_im = data->offset_y;
-		if (key == K_NUM_PLUS)
-			data->zoom *= ZOOM_FACTOR;
-		else
-			data->zoom /= ZOOM_FACTOR;
-		data->redraw = 1;
-	}
+	data->buddha_real_min = center_x - width / 2.0;
+	data->buddha_real_max = center_x + width / 2.0;
+	data->buddha_imag_min = center_y - height / 2.0;
+	data->buddha_imag_max = center_y + height / 2.0;
+	data->redraw = 1;
 }
+
 
 void	handle_iter_adjustment(int key, t_data *data)
 {
@@ -287,6 +414,33 @@ void	reset_base_color_component(t_data *data, int key)
 	data->redraw = 1;
 }
 
+double m_continuous_dwell(int N, double R, double _Complex c)
+{
+	int iter;
+	double _Complex z = 0 + 0*I;
+
+	for (iter = 0; iter < N; iter++)
+	{
+		z = cpow(z, 2) + c;
+		if (cabs(z) > R)
+			break ;
+	}
+	return (double)iter;
+}
+
+
+double _Complex	m_dwell_gradient(int N, double R, double s, double d, double _Complex c)
+{
+	double m  = m_continuous_dwell(N, R, c);
+	double mx = m_continuous_dwell(N, R, c + d);
+	double my = m_continuous_dwell(N, R, c + d * I);
+	double vx = m - mx;
+	double vy = m - my;
+	double vz = s;
+	double vm = sqrt(vx * vx + vy * vy + vz * vz);
+	return vz / vm;
+}
+
 int	mouse_press(int button, int x, int y, t_data *data)
 {
 	double	mouse_re;
@@ -351,44 +505,35 @@ int	render_next_frame(t_data *data)
 	return (0);
 }
 
-void draw_fractal_with_iter(t_data *data, int iter_count)
+void	draw_fractal_with_iter(t_data *data, int iter_count)
 {
-    if (data->img)
-        mlx_destroy_image(data->mlx, data->img);
-    data->img = mlx_new_image(data->mlx, WIN_WIDTH, WIN_HEIGHT);
-    if (!data->img)
-    {
-        ft_printf(ERROR_MSG_IMAGE);
-        exit_fractol(data);
-    }
-    data->addr = mlx_get_data_addr(data->img, &data->bpp,
-            &data->line_len, &data->endian);
-
-    if (data->fractal_type == BUDDHABROT)
-    {
-        data->max_iter = iter_count;
-        render_buddhabrot(data);
-    }
-    else
-    {
-        draw_fractal(data, iter_count);
-    }
-
-    mlx_put_image_to_window(data->mlx, data->win, data->img, 0, 0);
-    draw_info_strings(data);
-    if (data->is_selecting)
-        draw_selection_rectangle(data);
+	if (data->img)
+		mlx_destroy_image(data->mlx, data->img);
+	data->img = mlx_new_image(data->mlx, data->width, data->height);
+	if (!data->img)
+	{
+		ft_printf(ERROR_MSG_IMAGE);
+		exit_fractol(data);
+	}
+	data->addr = mlx_get_data_addr(data->img, &data->bpp,
+			&data->line_len, &data->endian);
+	if (data->fractal_type == BUDDHABROT)
+	{
+		data->max_iter = iter_count;
+		render_buddhabrot(data);
+	}
+	else
+	{
+		draw_fractal(data, iter_count);
+	}
+	if (data->is_selecting)
+		draw_selection_rectangle(data);
+	mlx_put_image_to_window(data->mlx, data->win, data->img, 0, 0);
+	draw_info_strings(data);
 }
 
-
-
-void	draw_fractal(t_data *data, int iter_count)
+static void	init_fractal_params(t_data *data, int iter_count)
 {
-	pthread_t		threads[NUM_THREADS];
-	t_data			thread_data[NUM_THREADS];
-	int				i;
-	int				height_per_thread;
-
 	data->scale = 1.0 / (data->zoom);
 	data->iter_count = iter_count;
 	if (data->fractal_type == JULIA)
@@ -401,20 +546,42 @@ void	draw_fractal(t_data *data, int iter_count)
 		data->real_min = -2.5 / data->zoom + data->offset_x;
 		data->imag_min = -1.5 / data->zoom + data->offset_y;
 	}
+}
+
+static void	init_thread_data(t_data *thread_data, t_data *data,
+		int height_per_thread, int i)
+{
+	thread_data[i] = *data;
+	thread_data[i].y_start = i * height_per_thread;
+	thread_data[i].y_end = (i + 1) * height_per_thread;
+	if (i == NUM_THREADS - 1)
+		thread_data[i].y_end = WIN_HEIGHT;
+}
+
+static void	cleanup_threads(pthread_t *threads, int i)
+{
+	while (--i >= 0)
+		pthread_join(threads[i], NULL);
+}
+
+void	draw_fractal(t_data *data, int iter_count)
+{
+	pthread_t	threads[NUM_THREADS];
+	t_data		thread_data[NUM_THREADS];
+	int			i;
+	int			height_per_thread;
+
+	init_fractal_params(data, iter_count);
 	height_per_thread = WIN_HEIGHT / NUM_THREADS;
 	i = 0;
 	while (i < NUM_THREADS)
 	{
-		thread_data[i] = *data;
-		thread_data[i].y_start = i * height_per_thread;
-		thread_data[i].y_end = (i + 1) * height_per_thread;
-		if (i == NUM_THREADS - 1)
-			thread_data[i].y_end = WIN_HEIGHT;
-		if (pthread_create(&threads[i], NULL, thread_draw_fractal, &thread_data[i]) != 0)
+		init_thread_data(thread_data, data, height_per_thread, i);
+		if (pthread_create(&threads[i], NULL, thread_draw_fractal,
+				&thread_data[i]) != 0)
 		{
 			ft_printf(ERROR_THREAD_CREATE);
-			while (--i >= 0)
-				pthread_join(threads[i], NULL);
+			cleanup_threads(threads, i);
 			exit_fractol(data);
 		}
 		i++;
@@ -460,34 +627,57 @@ void	draw_fractal_line(t_data *data, int y, t_fractal_params *params)
 	}
 }
 
-void	render_buddhabrot(t_data *data)
+static int	init_main_histogram(t_data *data)
 {
-	t_thread_data	*thread_data;
-	pthread_t		*threads;
-	int				i;
-
 	data->histogram = (unsigned int *)ft_calloc(WIN_WIDTH * WIN_HEIGHT,
 			sizeof(unsigned int));
 	if (!data->histogram)
 	{
 		ft_printf(ERROR_MALLOC_HIST);
-		exit_fractol(data);
+		return (0);
 	}
-	threads = (pthread_t *)malloc(NUM_THREADS * sizeof(pthread_t));
-	thread_data = (t_thread_data *)malloc(NUM_THREADS * sizeof(t_thread_data));
-	if (!threads || !thread_data)
-	{
-		free(data->histogram);
-		free(threads);
-		free(thread_data);
-		ft_printf(ERROR_MALLOC_THREAD);
-		exit_fractol(data);
-	}
+	return (1);
+}
+
+static int	init_thread_resources(t_thread_data **thread_data,
+		pthread_t **threads)
+{
+	*threads = (pthread_t *)malloc(NUM_THREADS * sizeof(pthread_t));
+	*thread_data = (t_thread_data *)malloc(NUM_THREADS * sizeof(t_thread_data));
+	if (!(*threads) || !(*thread_data))
+		return (0);
+	return (1);
+}
+
+static int	init_thread_data_arrays(t_thread_data *thread_data,
+		t_data *data, int i)
+{
+	thread_data[i].data = data;
+	thread_data[i].seed = i + 1;
+	thread_data[i].samples = SAMPLES_PER_THREAD / NUM_THREADS;
+	thread_data[i].traj_real = malloc(data->max_iter * sizeof(double));
+	thread_data[i].traj_imag = malloc(data->max_iter * sizeof(double));
+	thread_data[i].local_histogram = (unsigned int *)ft_calloc(WIN_WIDTH
+			* WIN_HEIGHT, sizeof(unsigned int));
+	if (!thread_data[i].traj_real || !thread_data[i].traj_imag
+		|| !thread_data[i].local_histogram)
+		return (0);
+	return (1);
+}
+
+static int	create_and_run_threads(t_thread_data *thread_data, pthread_t *threads, t_data *data)
+{
+	int	i;
+
 	i = 0;
 	while (i < NUM_THREADS)
 	{
-		thread_data[i].data = data;
-		thread_data[i].seed = i + 1;
+		if (!init_thread_data_arrays(thread_data, data, i))
+		{
+			cleanup_buddhabrot(data, threads, thread_data);
+			ft_printf(ERROR_MALLOC_THREAD_DATA);
+			return (0);
+		}
 		if (pthread_create(&threads[i], NULL, process_buddhabrot_section,
 				&thread_data[i]) != 0)
 		{
@@ -495,44 +685,105 @@ void	render_buddhabrot(t_data *data)
 				pthread_join(threads[i], NULL);
 			cleanup_buddhabrot(data, threads, thread_data);
 			ft_printf(ERROR_THREAD_CREATE);
-			exit_fractol(data);
+			return (0);
 		}
 		i++;
 	}
+	return (1);
+}
+
+void	render_buddhabrot(t_data *data)
+{
+	t_thread_data	*thread_data;
+	pthread_t		*threads;
+	int				i;
+
+	if (!init_main_histogram(data))
+		exit_fractol(data);
+	if (!init_thread_resources(&thread_data, &threads))
+	{
+		free(data->histogram);
+		ft_printf(ERROR_MALLOC_THREAD);
+		exit_fractol(data);
+	}
+	if (!create_and_run_threads(thread_data, threads, data))
+		exit_fractol(data);
 	i = 0;
 	while (i < NUM_THREADS)
 		pthread_join(threads[i++], NULL);
+	merge_local_histograms(data, thread_data, NUM_THREADS);
 	render_buddhabrot_image(data);
 	cleanup_buddhabrot(data, threads, thread_data);
 }
-void	cleanup_buddhabrot(t_data *data, pthread_t *threads,
-		t_thread_data *thread_data)
+
+void	merge_local_histograms(t_data *data, t_thread_data *thread_data, int num_threads)
 {
-	free(data->histogram);
-	free(threads);
-	free(thread_data);
+	int	i;
+	int	j;
+
+	for (i = 0; i < num_threads; i++)
+	{
+		for (j = 0; j < WIN_WIDTH * WIN_HEIGHT; j++)
+		{
+			if (thread_data[i].local_histogram[j] > 0)
+			{
+				pthread_mutex_lock(&data->histogram_mutex);
+				data->histogram[j] += thread_data[i].local_histogram[j];
+				pthread_mutex_unlock(&data->histogram_mutex);
+			}
+		}
+	}
 }
+
+
+void	cleanup_buddhabrot(t_data *data, pthread_t *threads, t_thread_data *thread_data)
+{
+	int	i;
+
+	if (thread_data)
+	{
+		for (i = 0; i < NUM_THREADS; i++)
+		{
+			if (thread_data[i].traj_real)
+				free(thread_data[i].traj_real);
+			if (thread_data[i].traj_imag)
+				free(thread_data[i].traj_imag);
+			if (thread_data[i].local_histogram)
+				free(thread_data[i].local_histogram);
+		}
+		free(thread_data);
+	}
+	if (threads)
+		free(threads);
+	if (data->histogram)
+	{
+		free(data->histogram);
+		data->histogram = NULL;
+	}
+}
+
 
 void render_buddhabrot_image(t_data *data)
 {
-    unsigned int max_value;
-    double normalized;
-    int i;
-    int color;
+	unsigned int max_value;
+	double normalized;
+	int i;
+	int color;
 
-    max_value = find_max_value(data->histogram, WIN_WIDTH * WIN_HEIGHT);
-    if (max_value == 0)
-        return;
-    i = 0;
-    while (i < WIN_WIDTH * WIN_HEIGHT)
-    {
-        normalized = log(1 + data->histogram[i]) / log(1 + max_value);
-        color = (int)(normalized * MAX_COLOR_VALUE);
-        put_pixel(data, i % WIN_WIDTH, i / WIN_WIDTH,
-            (color << 16) | (color << 8) | color);
-        i++;
-    }
+	max_value = find_max_value(data->histogram, WIN_WIDTH * WIN_HEIGHT);
+	if (max_value == 0)
+		return;
+	i = 0;
+	while (i < WIN_WIDTH * WIN_HEIGHT)
+	{
+		normalized = log(1 + data->histogram[i]) / log(1 + max_value);
+		color = (int)(normalized * MAX_COLOR_VALUE);
+		put_pixel(data, i % WIN_WIDTH, i / WIN_WIDTH,
+			(color << 16) | (color << 8) | color);
+		i++;
+	}
 }
+
 
 unsigned int	find_max_value(unsigned int *array, int size)
 {
@@ -578,18 +829,58 @@ void *process_buddhabrot_section(void *arg)
     double c_real;
     double c_imag;
     int samples_per_thread;
+    t_data *data = thread->data;
 
     samples_per_thread = SAMPLES_PER_THREAD;
     srand(thread->seed);
     for (i = 0; i < samples_per_thread; i++)
     {
-        c_real = BUDDHA_REAL_MIN + ((double)rand() / RAND_MAX)
-                * (BUDDHA_REAL_MAX - BUDDHA_REAL_MIN);
-        c_imag = BUDDHA_IMAG_MIN + ((double)rand() / RAND_MAX)
-                * (BUDDHA_IMAG_MAX - BUDDHA_IMAG_MIN);
-        process_point(thread->data, c_real, c_imag);
+        c_real = data->buddha_real_min + ((double)rand() / RAND_MAX)
+                * (data->buddha_real_max - data->buddha_real_min);
+        c_imag = data->buddha_imag_min + ((double)rand() / RAND_MAX)
+                * (data->buddha_imag_max - data->buddha_imag_min);
+        process_point(data, c_real, c_imag);
     }
     return NULL;
+}
+
+
+
+static void	update_histogram_point(t_data *data, int screen_x, int screen_y)
+{
+	if (screen_x >= 0 && screen_x < WIN_WIDTH
+		&& screen_y >= 0 && screen_y < WIN_HEIGHT)
+	{
+		pthread_mutex_lock(&data->histogram_mutex);
+		data->histogram[screen_y * WIN_WIDTH + screen_x]++;
+		pthread_mutex_unlock(&data->histogram_mutex);
+	}
+}
+
+static void	calculate_screen_coords(double real, double imag,
+		int *screen_x, int *screen_y)
+{
+	*screen_x = (int)((real - BUDDHA_REAL_MIN)
+			/ (BUDDHA_REAL_MAX - BUDDHA_REAL_MIN) * WIN_WIDTH);
+	*screen_y = (int)((imag - BUDDHA_IMAG_MIN)
+			/ (BUDDHA_IMAG_MAX - BUDDHA_IMAG_MIN) * WIN_HEIGHT);
+}
+
+static void	process_trajectory(t_data *data, double *traj_real,
+		double *traj_imag, int iter)
+{
+	int	i;
+	int	screen_x;
+	int	screen_y;
+
+	i = 0;
+	while (i < iter)
+	{
+		calculate_screen_coords(traj_real[i], traj_imag[i],
+			&screen_x, &screen_y);
+		update_histogram_point(data, screen_x, screen_y);
+		i++;
+	}
 }
 
 void	process_buddhabrot_point(t_data *data, double c_real, double c_imag)
@@ -599,9 +890,6 @@ void	process_buddhabrot_point(t_data *data, double c_real, double c_imag)
 	double	tmp;
 	double	trajectory_real[MAX_ITER];
 	double	trajectory_imag[MAX_ITER];
-	int		i;
-	int		screen_x;
-	int		screen_y;
 	int		iter;
 
 	if (is_in_main_cardioid(c_real, c_imag)
@@ -619,91 +907,100 @@ void	process_buddhabrot_point(t_data *data, double c_real, double c_imag)
 		z_real = tmp;
 		if (z_real * z_real + z_imag * z_imag > 4.0)
 		{
-			i = 0;
-			while (i < iter)
-			{
-				screen_x = (int)((trajectory_real[i] - BUDDHA_REAL_MIN)
-						/ (BUDDHA_REAL_MAX - BUDDHA_REAL_MIN) * WIN_WIDTH);
-				screen_y = (int)((trajectory_imag[i] - BUDDHA_IMAG_MIN)
-						/ (BUDDHA_IMAG_MAX - BUDDHA_IMAG_MIN) * WIN_HEIGHT);
-				if (screen_x >= 0 && screen_x < WIN_WIDTH
-					&& screen_y >= 0 && screen_y < WIN_HEIGHT)
-				{
-					pthread_mutex_lock(&data->histogram_mutex);
-					data->histogram[screen_y * WIN_WIDTH + screen_x]++;
-					pthread_mutex_unlock(&data->histogram_mutex);
-				}
-				i++;
-			}
+			process_trajectory(data, trajectory_real, trajectory_imag, iter);
 			break ;
 		}
 		iter++;
 	}
 }
 
-void process_point(t_data *data, double c_real, double c_imag)
+static int	allocate_trajectories(t_data *data, double **traj_real,
+		double **traj_imag)
 {
-    double *traj_real = malloc(data->max_iter * sizeof(double));
-    double *traj_imag = malloc(data->max_iter * sizeof(double));
-    if (!traj_real || !traj_imag)
-    {
-        free(traj_real);
-        free(traj_imag);
-        return;
-    }
+	*traj_real = malloc(data->max_iter * sizeof(double));
+	*traj_imag = malloc(data->max_iter * sizeof(double));
+	if (!(*traj_real) || !(*traj_imag))
+	{
+		free(*traj_real);
+		free(*traj_imag);
+		return (0);
+	}
+	return (1);
+}
 
-    double z_real = 0.0;
-    double z_imag = 0.0;
-    int iter = 0;
-    while (iter < data->max_iter)
-    {
-        traj_real[iter] = z_real;
-        traj_imag[iter] = z_imag;
-        double tmp = z_real * z_real - z_imag * z_imag + c_real;
-        z_imag = 2.0 * z_real * z_imag + c_imag;
-        z_real = tmp;
-        if (z_real * z_real + z_imag * z_imag > ESCAPE_RADIUS)
-        {
-            update_histogram(data, traj_real, traj_imag, iter);
-            break;
-        }
-        iter++;
-    }
-    free(traj_real);
-    free(traj_imag);
+static int	check_escape(double z_real, double z_imag)
+{
+	return (z_real * z_real + z_imag * z_imag > ESCAPE_RADIUS);
+}
+
+static void	calculate_next_point(double *z_real, double *z_imag,
+		double c_real, double c_imag)
+{
+	double	tmp;
+
+	tmp = *z_real * *z_real - *z_imag * *z_imag + c_real;
+	*z_imag = 2.0 * *z_real * *z_imag + c_imag;
+	*z_real = tmp;
+}
+
+void	process_point(t_data *data, double c_real, double c_imag)
+{
+	double	*traj_real;
+	double	*traj_imag;
+	double	z_real;
+	double	z_imag;
+	int		iter;
+
+	if (!allocate_trajectories(data, &traj_real, &traj_imag))
+		return ;
+	z_real = 0.0;
+	z_imag = 0.0;
+	iter = 0;
+	while (iter < data->max_iter)
+	{
+		traj_real[iter] = z_real;
+		traj_imag[iter] = z_imag;
+		calculate_next_point(&z_real, &z_imag, c_real, c_imag);
+		if (check_escape(z_real, z_imag))
+		{
+			update_histogram(data, traj_real, traj_imag, iter);
+			break ;
+		}
+		iter++;
+	}
+	free(traj_real);
+	free(traj_imag);
 }
 
 
 
-void update_histogram(t_data *data, double *traj_real, double *traj_imag, int length)
+
+void update_histogram(t_data *data, double *traj_real,
+		double *traj_imag, int length)
 {
-    int i;
-    for (i = 0; i < length; i++)
-    {
-        int x = (int)((traj_real[i] - BUDDHA_REAL_MIN)
-                / (BUDDHA_REAL_MAX - BUDDHA_REAL_MIN) * WIN_WIDTH);
-        int y = (int)((traj_imag[i] - BUDDHA_IMAG_MIN)
-                / (BUDDHA_IMAG_MAX - BUDDHA_IMAG_MIN) * WIN_HEIGHT);
-        if (x >= 0 && x < WIN_WIDTH && y >= 0 && y < WIN_HEIGHT)
-        {
-            pthread_mutex_lock(&data->histogram_mutex);
-            data->histogram[y * WIN_WIDTH + x]++;
-            pthread_mutex_unlock(&data->histogram_mutex);
-        }
-    }
+	int i;
+	for (i = 0; i < length; i++)
+	{
+		int x = (int)((traj_real[i] - BUDDHA_REAL_MIN)
+				/ (BUDDHA_REAL_MAX - BUDDHA_REAL_MIN) * WIN_WIDTH);
+		int y = (int)((traj_imag[i] - BUDDHA_IMAG_MIN)
+				/ (BUDDHA_IMAG_MAX - BUDDHA_IMAG_MIN) * WIN_HEIGHT);
+		if (x >= 0 && x < WIN_WIDTH && y >= 0 && y < WIN_HEIGHT)
+		{
+			pthread_mutex_lock(&data->histogram_mutex);
+			data->histogram[y * WIN_WIDTH + x]++;
+			pthread_mutex_unlock(&data->histogram_mutex);
+		}
+	}
 }
 
 
 
-void	normalize_and_render_buddhabrot(t_data *data)
+
+static unsigned int	find_max_histogram_value(t_data *data)
 {
 	unsigned int	max_value;
-	unsigned int	value;
-	double		normalized;
-	int			color;
 	int			i;
-	int			x;
-	int			y;
 
 	max_value = 0;
 	i = 0;
@@ -713,20 +1010,47 @@ void	normalize_and_render_buddhabrot(t_data *data)
 			max_value = data->histogram[i];
 		i++;
 	}
+	return (max_value);
+}
+
+static int	calculate_color(unsigned int value, unsigned int max_value)
+{
+	double	normalized;
+	int		color;
+
+	normalized = log(1 + value) / log(1 + max_value);
+	color = (int)(normalized * 255);
+	return ((color << 16) | (color << 8) | color);
+}
+
+static void	render_line(t_data *data, int y, unsigned int max_value)
+{
+	int				x;
+	unsigned int	value;
+	int				color;
+
+	x = 0;
+	while (x < WIN_WIDTH)
+	{
+		value = data->histogram[y * WIN_WIDTH + x];
+		color = calculate_color(value, max_value);
+		put_pixel(data, x, y, color);
+		x++;
+	}
+}
+
+void	normalize_and_render_buddhabrot(t_data *data)
+{
+	unsigned int	max_value;
+	int			y;
+
+	max_value = find_max_histogram_value(data);
 	if (max_value == 0)
 		return ;
 	y = 0;
 	while (y < WIN_HEIGHT)
 	{
-		x = 0;
-		while (x < WIN_WIDTH)
-		{
-			value = data->histogram[y * WIN_WIDTH + x];
-			normalized = log(1 + value) / log(1 + max_value);
-			color = (int)(normalized * 255);		
-			put_pixel(data, x, y, (color << 16) | (color << 8) | color);
-			x++;
-		}
+		render_line(data, y, max_value);
 		y++;
 	}
 }
@@ -747,42 +1071,193 @@ int	is_in_period2_bulb(double x, double y)
 	return (squared <= 0.0625);
 }
 
-int	get_color(int iter, t_data *data, double z_real, double z_imag, int max_iter)
+static int	get_color_part1(int iter, t_data *data, double z_real,
+		double z_imag, int max_iter)
 {
 	if (data->palette_type == PALETTE_FIRE)
 		return (get_color_fire(iter, max_iter, data));
-	else if (data->palette_type == PALETTE_STRIPES)
+	if (data->palette_type == PALETTE_STRIPES)
 		return (get_color_stripes(iter, data));
-	else if (data->palette_type == PALETTE_SMOOTH)
+	if (data->palette_type == PALETTE_SMOOTH)
 		return (get_color_smooth(iter, data));
-	else if (data->palette_type == PALETTE_CLASSIC)
+	if (data->palette_type == PALETTE_CLASSIC)
 		return (get_color_classic(iter, data));
-	else if (data->palette_type == PALETTE_DERIVATIVE_BAILOUT)
+	if (data->palette_type == PALETTE_DERIVATIVE_BAILOUT)
 		return (get_color_derivative_bailout(iter, z_real, z_imag, data));
-	else if (data->palette_type == PALETTE_LOGARITHMIC)
+	if (data->palette_type == PALETTE_LOGARITHMIC)
 		return (get_color_logarithmic(iter, max_iter, data));
-	else if (data->palette_type == PALETTE_HSV)
+	return (0);
+}
+
+static int	get_color_part2(int iter, t_data *data, double z_real,
+		double z_imag, int max_iter)
+{
+	if (data->palette_type == PALETTE_HSV)
 		return (get_color_hsv(iter, max_iter, data));
-	else if (data->palette_type == PALETTE_GRADIENT)
+	if (data->palette_type == PALETTE_GRADIENT)
 		return (get_color_gradient(iter, max_iter, data));
-	else if (data->palette_type == PALETTE_BLACK_WHITE)
+	if (data->palette_type == PALETTE_BLACK_WHITE)
 		return (get_color_black_white(iter, data));
-	else if (data->palette_type == PALETTE_ESCAPE_TIME)
+	if (data->palette_type == PALETTE_ESCAPE_TIME)
 		return (get_color_escape_time(iter, max_iter, data));
-	else if (data->palette_type == PALETTE_CONTINUOUS_POTENTIAL)
+	if (data->palette_type == PALETTE_CONTINUOUS_POTENTIAL)
 		return (get_color_continuous_potential(iter, z_real,
 				z_imag, max_iter, data));
-	else if (data->palette_type == PALETTE_INTERIOR_DISTANCE)
-		return (get_color_interior_distance(iter, z_real, z_imag,
-				max_iter, data));
-	else if (data->palette_type == PALETTE_LCH)
+	if (data->palette_type == PALETTE_INTERIOR_DISTANCE)
+		return (get_color_interior_distance(iter, z_real,
+				z_imag, max_iter, data));
+	return (0);
+}
+
+static int	get_color_part3(int iter, t_data *data, double z_real,
+		double z_imag, int max_iter)
+{
+	if (data->palette_type == PALETTE_LCH)
 		return (get_color_lch(iter, max_iter, data));
-	else if (data->palette_type == PALETTE_EXP_CYCLIC_LCH_NO_SHADING)
+	if (data->palette_type == PALETTE_EXP_CYCLIC_LCH_NO_SHADING)
 		return (get_color_exp_cyclic_lch_no_shading(iter, max_iter, data));
-	else if (data->palette_type == PALETTE_EXP_CYCLIC_LCH_SHADING)
+	if (data->palette_type == PALETTE_EXP_CYCLIC_LCH_SHADING)
 		return (get_color_exp_cyclic_lch_shading(iter, max_iter, data));
+	if (data->palette_type == PALETTE_DWELL_GRADIENT)
+		return (get_color_dwell_gradient(iter, max_iter, data,
+				z_real, z_imag));
+	if (data->palette_type == PALETTE_CUSTOM_INTERIOR)
+		return (get_color_custom_interior(iter, max_iter, data,
+				z_real, z_imag));
+	return (0);
+}
+
+int	get_color(int iter, t_data *data, double z_real,
+		double z_imag, int max_iter)
+{
+	int	color;
+
+	color = get_color_part1(iter, data, z_real, z_imag, max_iter);
+	if (color)
+		return (color);
+	color = get_color_part2(iter, data, z_real, z_imag, max_iter);
+	if (color)
+		return (color);
+	color = get_color_part3(iter, data, z_real, z_imag, max_iter);
+	if (color)
+		return (color);
 	return (COLOR_BLACK);
 }
+
+static void	assign_rgb_values(float r, float g, float b,
+		float *red, float *grn, float *blu)
+{
+	*red = r;
+	*grn = g;
+	*blu = b;
+}
+
+static void	calculate_hsv_components(float h, float v, float s,
+		float *p, float *q, float *t)
+{
+	float	f;
+
+	f = h - floorf(h);
+	*p = v * (1 - s);
+	*q = v * (1 - (s * f));
+	*t = v * (1 - (s * (1 - f)));
+}
+
+static void	get_rgb_from_case(int case_value, float v, float p,
+		float q, float t, float *r, float *g, float *b)
+{
+	if (case_value == 0)
+		(*r = v, *g = t, *b = p);
+	else if (case_value == 1)
+		(*r = q, *g = v, *b = p);
+	else if (case_value == 2)
+		(*r = p, *g = v, *b = t);
+	else if (case_value == 3)
+		(*r = p, *g = q, *b = v);
+	else if (case_value == 4)
+		(*r = t, *g = p, *b = v);
+	else
+		(*r = v, *g = p, *b = q);
+}
+
+void	hsv2rgb(float h, float s, float v, float *red, float *grn, float *blu)
+{
+	float	p;
+	float	q;
+	float	t;
+	float	r;
+	float	g;
+	float	b;
+	int		case_value;
+
+	if (s == 0)
+	{
+		r = v;
+		g = v;
+		b = v;
+	}
+	else
+	{
+		h = 6 * (h - floorf(h));
+		case_value = (int)floorf(h);
+		calculate_hsv_components(h, v, s, &p, &q, &t);
+		get_rgb_from_case(case_value, v, p, q, t, &r, &g, &b);
+	}
+	assign_rgb_values(r, g, b, red, grn, blu);
+}
+
+
+void	dwell_gradient(int width, int height, int maxiter, int i, int j, const int *counts, unsigned char *pixel, t_data *data) 
+{
+	int	k0 = height * i + j;
+	float	r = 0.0f, g = 0.0f, b = 0.0f;
+	
+	if (counts[k0] == maxiter)
+	{
+		r = g = b = 1.0f;
+	}
+	else
+	{
+		double _Complex c = (double)i + (double)j * I;
+		double _Complex gradient = m_dwell_gradient(maxiter, 4.0, 1.0, 0.1, c);
+		
+		double vz = creal(gradient);
+		float	hue = fmod((vz * 360.0), 360.0f) / 360.0f;
+		float	saturation = 1.0f;
+		float	value = (counts[k0] < maxiter) ? 1.0f : 0.0f;
+		
+		hsv2rgb(hue, saturation, value, &r, &g, &b);
+		r = (r * data->base_color.r) / MAX_COLOR_VALUE;
+		g = (g * data->base_color.g) / MAX_COLOR_VALUE;
+		b = (b * data->base_color.b) / MAX_COLOR_VALUE;
+	}
+	
+	int	k = (width * j + i) * 3;
+	pixel[k + 0] = fminf(fmaxf(255 * r, 0), 255);
+	pixel[k + 1] = fminf(fmaxf(255 * g, 0), 255);
+	pixel[k + 2] = fminf(fmaxf(255 * b, 0), 255);
+}
+
+
+int get_color_dwell_gradient(int iter, int max_iter, t_data *data, double z_real, double z_imag)
+{
+    double _Complex c = z_real + z_imag * I;
+    double _Complex gradient = m_dwell_gradient(max_iter, ESCAPE_RADIUS, 1.0, 0.1, c);
+    double vz = creal(gradient);
+    double hue = fmod((vz * 360.0), 360.0);
+    double saturation = 1.0;
+    double value = (iter < max_iter) ? 1.0 : 0.0;
+    float r, g, b;
+    
+    hsv2rgb((float)(hue / 360.0), (float)saturation, (float)value, &r, &g, &b);
+    r = (r * data->base_color.r) / MAX_COLOR_VALUE;
+    g = (g * data->base_color.g) / MAX_COLOR_VALUE;
+    b = (b * data->base_color.b) / MAX_COLOR_VALUE;
+
+    return ((int)(r * 255) << 16) | ((int)(g * 255) << 8) | (int)(b * 255);
+}
+
+
 
 int	get_color_fire(int iter, int max_iter, t_data *data)
 {
@@ -870,6 +1345,25 @@ int	get_color_hsv(int iter, int max_iter, t_data *data)
 	return ((r << 16) | (g << 8) | b);
 }
 
+void yuv_to_rgb(double y, double u, double v, int *r, int *g, int *b)
+{
+	double r_f, g_f, b_f;
+
+	r_f = y + 1.407 * v;
+	g_f = y - 0.344 * u - 0.714 * v;
+	b_f = y + 1.770 * u;
+
+	r_f = fmin(fmax(r_f, 0.0), 1.0);
+	g_f = fmin(fmax(g_f, 0.0), 1.0);
+	b_f = fmin(fmax(b_f, 0.0), 1.0);
+
+	*r = (int)(r_f * 255.0);
+	*g = (int)(g_f * 255.0);
+	*b = (int)(b_f * 255.0);
+}
+
+
+
 void	hsv_to_rgb(double h, double s, double v, int *r, int *g, int *b)
 {
 	double	c;
@@ -915,6 +1409,63 @@ int	get_color_gradient(int iter, int max_iter, t_data *data)
 	b = (b * data->base_color.b) / MAX_COLOR_VALUE;
 	return ((r << 16) | (g << 8) | b);
 }
+
+static void	calculate_magnitude(double z_real, double z_imag,
+		double *magnitude_sq, double *magnitude_val)
+{
+	*magnitude_sq = z_real * z_real + z_imag * z_imag;
+	*magnitude_val = sqrt(*magnitude_sq);
+}
+
+static double	calculate_angle(double z_real, double z_imag)
+{
+	double	angle;
+
+	angle = atan2(z_imag, z_real);
+	if (angle < 0)
+		angle += 2 * M_PI;
+	return (angle);
+}
+
+static void	calculate_uv_components(double angle, double saturation,
+		double *u, double *v)
+{
+	*u = cos(angle) * saturation;
+	*v = sin(angle) * saturation;
+}
+
+static int	apply_base_color(t_data *data, int r, int g, int b)
+{
+	r = (int)((double)r * data->base_color.r / MAX_COLOR_VALUE);
+	g = (int)((double)g * data->base_color.g / MAX_COLOR_VALUE);
+	b = (int)((double)b * data->base_color.b / MAX_COLOR_VALUE);
+	return ((r << 16) | (g << 8) | b);
+}
+
+int	get_color_custom_interior(int iter, int max_iter,
+		t_data *data, double z_real, double z_imag)
+{
+	double	magnitude_sq;
+	double	magnitude_val;
+	double	escape_value;
+	double	angle;
+	int		r;
+	int		g;
+	int		b;
+
+	if (iter >= max_iter)
+		return (COLOR_BLACK);
+	calculate_magnitude(z_real, z_imag, &magnitude_sq, &magnitude_val);
+	escape_value = log(magnitude_sq) * magnitude_val / 65536.0;
+	angle = calculate_angle(z_real, z_imag);
+	double u;
+	double v;
+	calculate_uv_components(angle, 1.0, &u, &v);
+	yuv_to_rgb(fmax(0.0, 1.0 - escape_value / 4.0), u, v, &r, &g, &b);
+	return (apply_base_color(data, r, g, b));
+}
+
+
 
 int	get_color_black_white(int iter, t_data *data)
 {
@@ -1007,14 +1558,13 @@ int	get_color_lch(int iter, int max_iter, t_data *data)
 
 void	put_pixel(t_data *data, int x, int y, int color)
 {
-	char	*dst;
-
-	if (x >= 0 && x < WIN_WIDTH && y >= 0 && y < WIN_HEIGHT)
+	if (x >= 0 && x < data->width && y >= 0 && y < data->height)
 	{
-		dst = data->addr + (y * data->line_len + x * (data->bpp / 8));
-		*(unsigned int *)dst = color;
+		int	index = y * data->line_len + x * (data->bpp / 8);
+		*((unsigned int *)(data->addr + index)) = color;
 	}
 }
+
 
 char	*str_join_free(char *s1, char *s2)
 {
@@ -1030,40 +1580,42 @@ void	draw_info_strings(t_data *data)
 {
 	int		y;
 
+	if (!data->overlay_enabled)
+		return ;
 	y = 10;
-	mlx_string_put(data->mlx, data->win, 10, y, COLOR_WHITE,
-		"Fract'ol - 42 Project");
+	mlx_string_put(data->mlx, data->win, 10, y, COLOR_WHITE, "Fract'ol - 42 Project");
 	y += 20;
 	draw_controls(data, &y);
 	draw_parameters(data, &y);
+	mlx_string_put(data->mlx, data->win, 10, y, COLOR_WHITE, data->fast_mode ? "Mode Rapide: Activé" : "Mode Rapide: Désactivé");
+	y += 20;
+	mlx_string_put(data->mlx, data->win, 10, y, COLOR_WHITE, data->is_fullscreen ? "Plein Écran: Activé" : "Plein Écran: Désactivé");
+	y += 20;
 }
+
 
 void	draw_controls(t_data *data, int *y)
 {
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
-		"Press R to reset view");
+	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Press R to reset view");
 	*y += 20;
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
-		"Use arrow keys or WASD to move");
+	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Use arrow keys or WASD to move");
 	*y += 20;
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
-		"Use + and - to zoom");
+	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Use + and - to zoom");
 	*y += 20;
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
-		"Adjust iterations with F (down) and G (up)");
+	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Adjust iterations with F (down) and G (up)");
 	*y += 20;
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
-		"Change palette with Z (previous) and X (next)");
+	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Change palette with Z (previous) and X (next)");
 	*y += 20;
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
-		"Adjust color components with Numpad 7-9, 4-6, 1-3");
+	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Toggle Fast Mode with 1");
 	*y += 20;
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
-		"Reset color components with Numpad 8, 5, 2");
+	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Toggle Overlay with H");
+	*y += 20;
+	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Toggle Fullscreen with 0");
 	*y += 20;
 }
 
-void	draw_parameters(t_data *data, int *y)
+
+static void	draw_zoom_info(t_data *data, int *y)
 {
 	char	*str;
 	char	*temp;
@@ -1074,25 +1626,57 @@ void	draw_parameters(t_data *data, int *y)
 	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, str);
 	free(str);
 	*y += 20;
+}
+
+static void	draw_iter_info(t_data *data, int *y)
+{
+	char	*str;
+	char	*temp;
+
 	temp = ft_itoa(data->max_iter);
 	str = ft_strjoin("Iterations: ", temp);
 	free(temp);
 	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, str);
 	free(str);
 	*y += 20;
+}
+
+static char	*create_rgb_string(t_data *data)
+{
+	char	*str;
+
 	str = ft_strjoin("RGB: (", ft_itoa(data->base_color.r));
+	if (!str)
+		return (NULL);
 	str = str_join_free(str, ft_strdup(", "));
 	str = str_join_free(str, ft_itoa(data->base_color.g));
 	str = str_join_free(str, ft_strdup(", "));
 	str = str_join_free(str, ft_itoa(data->base_color.b));
 	str = str_join_free(str, ft_strdup(")"));
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, str);
-	free(str);
+	return (str);
+}
+
+static void	draw_rgb_info(t_data *data, int *y)
+{
+	char	*str;
+
+	str = create_rgb_string(data);
+	if (str)
+	{
+		mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, str);
+		free(str);
+	}
 	*y += 20;
+}
+
+void	draw_parameters(t_data *data, int *y)
+{
+	draw_zoom_info(data, y);
+	draw_iter_info(data, y);
+	draw_rgb_info(data, y);
 	draw_fractal_type(data, y);
 	draw_palette_type(data, y);
 }
-
 void	draw_fractal_type(t_data *data, int *y)
 {
 	const char	*fractal_names[] = {
@@ -1110,11 +1694,23 @@ void	draw_fractal_type(t_data *data, int *y)
 void	draw_palette_type(t_data *data, int *y)
 {
 	const char	*palette_names[] = {
-		"Fire", "Stripes", "Smooth", "Classic", "Logarithmic",
-		"HSV", "Gradient", "Black & White", "Escape Time",
-		"Continuous Potential", "Interior Distance", "LCH",
-		"Exp Cyclic LCH No Shading", "Exp Cyclic LCH Shading",
-		"Derivative Bailout"
+		"Fire",
+		"Stripes",
+		"Smooth",
+		"Classic",
+		"Logarithmic",
+		"HSV",
+		"Gradient",
+		"Black & White",
+		"Escape Time",
+		"Continuous Potential",
+		"Interior Distance",
+		"LCH",
+		"Exp Cyclic LCH No Shading",
+		"Exp Cyclic LCH Shading",
+		"Derivative Bailout",
+		"Dwell Gradient",
+		"Rainbow Interior"
 	};
 
 	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
@@ -1132,50 +1728,34 @@ void	draw_selection_rectangle(t_data *data)
 	int	y_end;
 
 	get_sorted_selection(data, &x_start, &x_end, &y_start, &y_end);
+	if (x_start == x_end || y_start == y_end)
+		return;
 	draw_rectangle_edges(data, x_start, y_start, x_end, y_end);
 }
 
-void	get_sorted_selection(t_data *data, int *x_start, int *x_end,
-	int *y_start, int *y_end)
+void	get_sorted_selection(t_data *data, int *x_start, int *x_end, int *y_start, int *y_end)
 {
-	*x_start = data->select_start_x;
-	*y_start = data->select_start_y;
-	*x_end = data->select_end_x;
-	*y_end = data->select_end_y;
-	if (*x_start > *x_end)
-		ft_swap(x_start, x_end);
-	if (*y_start > *y_end)
-		ft_swap(y_start, y_end);
-	*x_start = ft_clamp(*x_start, 0, WIN_WIDTH);
-	*x_end = ft_clamp(*x_end, 0, WIN_WIDTH);
-	*y_start = ft_clamp(*y_start, 0, WIN_HEIGHT);
-	*y_end = ft_clamp(*y_end, 0, WIN_HEIGHT);
+	*x_start = ft_clamp((data->select_start_x < data->select_end_x) ? data->select_start_x : data->select_end_x, 0, data->width - 1);
+	*x_end = ft_clamp((data->select_start_x > data->select_end_x) ? data->select_start_x : data->select_end_x, 0, data->width - 1);
+	*y_start = ft_clamp((data->select_start_y < data->select_end_y) ? data->select_start_y : data->select_end_y, 0, data->height - 1);
+	*y_end = ft_clamp((data->select_start_y > data->select_end_y) ? data->select_start_y : data->select_end_y, 0, data->height - 1);
 }
 
-void	draw_rectangle_edges(t_data *data, int x_start, int y_start,
-	int x_end, int y_end)
+void	draw_rectangle_edges(t_data *data, int x_start, int y_start, int x_end, int y_end)
 {
 	int	x;
-	int	y;
 
-	y = y_start;
-	while (y <= y_end)
+	for (x = x_start; x <= x_end; x++)
 	{
-		if (y == y_start || y == y_end)
-		{
-			x = x_start;
-			while (x <= x_end)
-			{
-				put_pixel(data, x, y, 0xFFFFFF);
-				x++;
-			}
-		}
-		else
-		{
-			put_pixel(data, x_start, y, 0xFFFFFF);
-			put_pixel(data, x_end, y, 0xFFFFFF);
-		}
-		y++;
+		put_pixel(data, x, y_start, 0xFFFFFF);
+		put_pixel(data, x, y_end, 0xFFFFFF);
+	}
+
+	int	y;
+	for (y = y_start; y <= y_end; y++)
+	{
+		put_pixel(data, x_start, y, 0xFFFFFF);
+		put_pixel(data, x_end, y, 0xFFFFFF);
 	}
 }
 
@@ -1188,26 +1768,46 @@ void	swap_int(int *a, int *b)
 	*b = temp;
 }
 
-void	zoom_to_selection(t_data *data)
+static void	calculate_buddha_bounds(t_data *data, int x_start,
+		int x_end, int y_start, int y_end)
 {
-	int		x_start;
-	int		y_start;
-	int		x_end;
-	int		y_end;
+	double	x_min;
+	double	x_max;
+	double	y_min;
+	double	y_max;
+	double	x_range;
+	double	y_range;
+
+	x_range = data->buddha_real_max - data->buddha_real_min;
+	y_range = data->buddha_imag_max - data->buddha_imag_min;
+	x_min = data->buddha_real_min + (double)x_start / WIN_WIDTH * x_range;
+	x_max = data->buddha_real_min + (double)x_end / WIN_WIDTH * x_range;
+	y_min = data->buddha_imag_min + (double)y_start / WIN_HEIGHT * y_range;
+	y_max = data->buddha_imag_min + (double)y_end / WIN_HEIGHT * y_range;
+	data->buddha_real_min = x_min;
+	data->buddha_real_max = x_max;
+	data->buddha_imag_min = y_min;
+	data->buddha_imag_max = y_max;
+}
+
+static void	calculate_coordinates(t_data *data, int x, int y,
+		double *coord_x, double *coord_y)
+{
+	*coord_x = (x / (double)WIN_WIDTH - 0.5) * 4.0 / data->zoom
+		+ data->offset_x;
+	*coord_y = (y / (double)WIN_HEIGHT - 0.5) * 4.0 / data->zoom
+		+ data->offset_y;
+}
+
+static void	update_zoom_and_center(t_data *data, double start_x,
+		double end_x, double start_y, double end_y)
+{
 	double	selected_width;
 	double	selected_height;
 	double	zoom_factor_x;
 	double	zoom_factor_y;
 	double	new_center_x;
 	double	new_center_y;
-
-	get_sorted_selection(data, &x_start, &x_end, &y_start, &y_end);
-	if (x_start == x_end || y_start == y_end)
-		return ;
-	double start_x = (x_start / (double)WIN_WIDTH - 0.5) * 4.0 / data->zoom + data->offset_x;
-	double end_x = (x_end / (double)WIN_WIDTH - 0.5) * 4.0 / data->zoom + data->offset_x;
-	double start_y = (y_start / (double)WIN_HEIGHT - 0.5) * 4.0 / data->zoom + data->offset_y;
-	double end_y = (y_end / (double)WIN_HEIGHT - 0.5) * 4.0 / data->zoom + data->offset_y;
 
 	selected_width = fabs(end_x - start_x);
 	selected_height = fabs(end_y - start_y);
@@ -1218,8 +1818,33 @@ void	zoom_to_selection(t_data *data)
 	new_center_y = start_y + selected_height / 2.0;
 	data->offset_x = new_center_x;
 	data->offset_y = new_center_y;
+}
+
+void	zoom_to_selection(t_data *data)
+{
+	int		x_start;
+	int		y_start;
+	int		x_end;
+	int		y_end;
+	double	start_x;
+	double	start_y;
+	double	end_x;
+	double	end_y;
+
+	get_sorted_selection(data, &x_start, &x_end, &y_start, &y_end);
+	if (x_start == x_end || y_start == y_end)
+		return ;
+	if (data->fractal_type == BUDDHABROT)
+		calculate_buddha_bounds(data, x_start, x_end, y_start, y_end);
+	else
+	{
+		calculate_coordinates(data, x_start, y_start, &start_x, &start_y);
+		calculate_coordinates(data, x_end, y_end, &end_x, &end_y);
+		update_zoom_and_center(data, start_x, end_x, start_y, end_y);
+	}
 	data->redraw = 1;
 }
+
 
 void calculate_zoom_and_offset(t_data *data, int x_start, int x_end, int y_start, int y_end)
 {
@@ -1251,28 +1876,26 @@ void update_zoom_and_offset(t_data *data, double x_min, double x_max, double y_m
 	data->offset_y = (y_min + y_max) / 2.0;
 }
 
-char	*ft_ftoa(double n, int precision)
+static int	handle_allocation(char **int_str, char **frac_str,
+		long long int_part, int precision)
 {
-	long long	int_part;
-	double		frac_part;
-	char		*int_str;
-	char		*frac_str;
-	char		*result;
-	int			i;
-
-	int_part = (long long)n;
-	frac_part = n - (double)int_part;
-	if (frac_part < 0)
-		frac_part = -frac_part;
-	int_str = ft_lltoa(int_part);
-	if (!int_str)
-		return (NULL);
-	frac_str = (char *)malloc(precision + 2);
-	if (!frac_str)
+	*int_str = ft_lltoa(int_part);
+	if (!(*int_str))
+		return (0);
+	*frac_str = (char *)malloc(precision + 2);
+	if (!(*frac_str))
 	{
-		free(int_str);
-		return (NULL);
+		free(*int_str);
+		return (0);
 	}
+	return (1);
+}
+
+static void	process_fractional_part(char *frac_str, double frac_part,
+		int precision)
+{
+	int	i;
+
 	frac_str[0] = '.';
 	i = 1;
 	while (i <= precision)
@@ -1283,10 +1906,33 @@ char	*ft_ftoa(double n, int precision)
 		i++;
 	}
 	frac_str[i] = '\0';
+}
+
+static char	*join_and_free(char *int_str, char *frac_str)
+{
+	char	*result;
+
 	result = ft_strjoin(int_str, frac_str);
 	free(int_str);
 	free(frac_str);
 	return (result);
+}
+
+char	*ft_ftoa(double n, int precision)
+{
+	long long	int_part;
+	double		frac_part;
+	char		*int_str;
+	char		*frac_str;
+
+	int_part = (long long)n;
+	frac_part = n - (double)int_part;
+	if (frac_part < 0)
+		frac_part = -frac_part;
+	if (!handle_allocation(&int_str, &frac_str, int_part, precision))
+		return (NULL);
+	process_fractional_part(frac_str, frac_part, precision);
+	return (join_and_free(int_str, frac_str));
 }
 
 char	*ft_lltoa(long long n)
@@ -1399,15 +2045,67 @@ int	compute_julia(t_data *data, t_fractal_vars *vars, int iter_count)
 {
 	int		iter;
 	double	tmp;
+	double	z_real_sq;
+	double	z_imag_sq;
 
 	vars->z_real = vars->c_real;
 	vars->z_imag = vars->c_imag;
 	iter = 0;
-	while ((vars->z_real * vars->z_real + vars->z_imag * vars->z_imag <= ESCAPE_RADIUS)
+	while (((z_real_sq = vars->z_real * vars->z_real) + (z_imag_sq = vars->z_imag * vars->z_imag)) <= ESCAPE_RADIUS
 		&& (iter < iter_count))
 	{
-		tmp = vars->z_real * vars->z_real - vars->z_imag * vars->z_imag + data->c_real;
+		tmp = z_real_sq - z_imag_sq + data->c_real;
 		vars->z_imag = 2.0 * vars->z_real * vars->z_imag + data->c_imag;
+		vars->z_real = tmp;
+		iter++;
+	}
+	return (iter);
+}
+
+static void	init_mandel_vars(t_fractal_vars *vars)
+{
+	vars->z_real = 0.0;
+	vars->z_imag = 0.0;
+}
+
+static int	compute_tricorn(t_fractal_vars *vars, int iter_count)
+{
+	int		iter;
+	double	tmp;
+	double	z_real_sq;
+	double	z_imag_sq;
+
+	iter = 0;
+	while (iter < iter_count)
+	{
+		z_real_sq = vars->z_real * vars->z_real;
+		z_imag_sq = vars->z_imag * vars->z_imag;
+		if (z_real_sq + z_imag_sq > ESCAPE_RADIUS)
+			break ;
+		tmp = z_real_sq - z_imag_sq + vars->c_real;
+		vars->z_imag = -2.0 * vars->z_real * vars->z_imag + vars->c_imag;
+		vars->z_real = tmp;
+		iter++;
+	}
+	return (iter);
+}
+
+static int	compute_standard(t_fractal_vars *vars, int iter_count)
+{
+	int		iter;
+	double	tmp;
+	double	z_real_sq;
+	double	z_imag_sq;
+
+	iter = 0;
+	while (iter < iter_count)
+	{
+		z_real_sq = vars->z_real * vars->z_real;
+		z_imag_sq = vars->z_imag * vars->z_imag;
+		if (z_real_sq + z_imag_sq > ESCAPE_RADIUS)
+			break ;
+		tmp = z_real_sq - z_imag_sq + vars->c_real;
+		vars->z_imag = 2.0 * vars->z_real * vars->z_imag + vars->c_imag;
 		vars->z_real = tmp;
 		iter++;
 	}
@@ -1416,24 +2114,10 @@ int	compute_julia(t_data *data, t_fractal_vars *vars, int iter_count)
 
 int	compute_mandelbrot(t_data *data, t_fractal_vars *vars, int iter_count)
 {
-	int		iter;
-	double	tmp;
-
-	vars->z_real = 0;
-	vars->z_imag = 0;
-	iter = 0;
-	while ((vars->z_real * vars->z_real + vars->z_imag * vars->z_imag <= ESCAPE_RADIUS)
-		&& (iter < iter_count))
-	{
-		tmp = vars->z_real * vars->z_real - vars->z_imag * vars->z_imag + vars->c_real;
-		if (data->fractal_type == TRICORN)
-			vars->z_imag = -2.0 * vars->z_real * vars->z_imag + vars->c_imag;
-		else
-			vars->z_imag = 2.0 * vars->z_real * vars->z_imag + vars->c_imag;
-		vars->z_real = tmp;
-		iter++;
-	}
-	return (iter);
+	init_mandel_vars(vars);
+	if (data->fractal_type == TRICORN)
+		return (compute_tricorn(vars, iter_count));
+	return (compute_standard(vars, iter_count));
 }
 
 int	compute_burning_ship(t_fractal_vars *vars, int iter_count)
@@ -1457,38 +2141,32 @@ int	compute_burning_ship(t_fractal_vars *vars, int iter_count)
 	return (iter);
 }
 
-int	compute_lyapunov(t_fractal_vars *vars, int iter_count)
+static void	init_lyap_vars(double *value, double *sum_log_deriv,
+		int *max_iter, int iter_count)
 {
-	double			value;
-	double			sum_log_deriv;
-	int				iter;
-	unsigned int	m;
-	int				seq_len;
-	char			*sequence;
-	double			r;
-	int				max_iter;
+	*value = 0.5;
+	*sum_log_deriv = 0.0;
+	*max_iter = iter_count * ft_strlen(LYAPUNOV_SEQUENCE);
+}
 
-	sequence = LYAPUNOV_SEQUENCE;
-	seq_len = ft_strlen(sequence);
-	value = 0.5;
-	sum_log_deriv = 0.0;
-	iter = 0;
-	max_iter = iter_count * seq_len;
-	while (iter < max_iter)
-	{
-		m = iter % seq_len;
-		if (sequence[m] == 'A')
-			r = vars->c_real;
-		else
-			r = vars->c_imag;
-		if (r < 0 || r > 4)
-			break ;
-		value = r * value * (1 - value);
-		if (value == 0 || value == 1)
-			break ;
-		sum_log_deriv += log(fabs(r * (1 - 2 * value)));
-		iter++;
-	}
+static double	get_r_value(t_fractal_vars *vars, char sequence_char)
+{
+	if (sequence_char == 'A')
+		return (vars->c_real);
+	return (vars->c_imag);
+}
+
+static int	check_value_bounds(double value, double r)
+{
+	if (r < 0 || r > 4)
+		return (0);
+	if (value == 0 || value == 1)
+		return (0);
+	return (1);
+}
+
+static int	calculate_final_value(double sum_log_deriv, int iter)
+{
 	if (iter == 0)
 		return (0);
 	sum_log_deriv /= iter;
@@ -1497,34 +2175,92 @@ int	compute_lyapunov(t_fractal_vars *vars, int iter_count)
 	return (0);
 }
 
+int	compute_lyapunov(t_fractal_vars *vars, int iter_count)
+{
+	double			value;
+	double			sum_log_deriv;
+	int				iter;
+	int				max_iter;
+	double			r;
+	unsigned int	m;
+	char			*sequence;
+
+	sequence = LYAPUNOV_SEQUENCE;
+	init_lyap_vars(&value, &sum_log_deriv, &max_iter, iter_count);
+	iter = 0;
+	while (iter < max_iter)
+	{
+		m = iter % ft_strlen(sequence);
+		r = get_r_value(vars, sequence[m]);
+		if (!check_value_bounds(value, r))
+			break ;
+		value = r * value * (1 - value);
+		sum_log_deriv += log(fabs(r * (1 - 2 * value)));
+		iter++;
+	}
+	return (calculate_final_value(sum_log_deriv, iter));
+}
+
+static void	init_newton_vars(t_fractal_vars *vars)
+{
+	vars->z_real = vars->c_real;
+	vars->z_imag = vars->c_imag;
+}
+
+static double	calculate_denominator(double old_real, double old_imag)
+{
+	double	diff_squared;
+
+	diff_squared = old_real * old_real - old_imag * old_imag;
+	return (3.0 * diff_squared * diff_squared);
+}
+
+static void	calculate_next_z(t_fractal_vars *vars, double old_real,
+		double old_imag, double denominator)
+{
+	double	tmp;
+	double	real_cubed;
+	double	imag_cubed;
+
+	real_cubed = old_real * old_real * old_real;
+	imag_cubed = old_imag * old_imag * old_imag;
+	tmp = (2.0 * real_cubed - 2.0 * old_real * old_imag * old_imag
+			- old_real) / denominator;
+	vars->z_imag = (2.0 * imag_cubed - 2.0 * old_real * old_real
+			* old_imag + old_imag) / denominator;
+	vars->z_real = tmp;
+}
+
+static int	check_convergence(double old_real, double old_imag,
+		double new_real, double new_imag)
+{
+	double	diff_real;
+	double	diff_imag;
+
+	diff_real = old_real - new_real;
+	diff_imag = old_imag - new_imag;
+	return ((diff_real * diff_real + diff_imag * diff_imag) < 1e-6);
+}
+
 int	compute_newton(t_fractal_vars *vars, int iter_count)
 {
 	int		iter;
 	double	old_real;
 	double	old_imag;
 	double	denominator;
-	double	tmp;
 
-	vars->z_real = vars->c_real;
-	vars->z_imag = vars->c_imag;
+	init_newton_vars(vars);
 	iter = 0;
 	while (iter < iter_count)
 	{
 		old_real = vars->z_real;
 		old_imag = vars->z_imag;
-		denominator = 3 * (old_real * old_real - old_imag * old_imag)
-			* (old_real * old_real - old_imag * old_imag);
+		denominator = calculate_denominator(old_real, old_imag);
 		if (denominator == 0)
 			break ;
-		tmp = (2 * old_real * old_real * old_real
-			- 2 * old_real * old_imag * old_imag - old_real)
-			/ denominator;
-		vars->z_imag = (2 * old_imag * old_imag * old_imag
-			- 2 * old_real * old_real * old_imag + old_imag)
-			/ denominator;
-		vars->z_real = tmp;
-		if ((old_real - vars->z_real) * (old_real - vars->z_real)
-			+ (old_imag - vars->z_imag) * (old_imag - vars->z_imag) < 1e-6)
+		calculate_next_z(vars, old_real, old_imag, denominator);
+		if (check_convergence(old_real, old_imag,
+				vars->z_real, vars->z_imag))
 			break ;
 		iter++;
 	}
