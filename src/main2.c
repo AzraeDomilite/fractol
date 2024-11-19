@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/19 05:20:50 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/19 05:24:06 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/19 14:18:16 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/19 14:18:16 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,7 +176,7 @@ void	handle_movement(int key, t_data *data)
 	else if (key == K_D || key == K_RIGHT)
 		move_offset(data, MOVE_FACTOR, 0);
 	else if (key == K_A || key == K_LEFT)
-		move_offset(data, -MOVE_FACTOR, 0);
+		move_offset(data,- MOVE_FACTOR, 0);
 }
 
 void	move_offset(t_data *data, double x_factor, double y_factor)
@@ -195,17 +195,13 @@ void	handle_zoom(int key, t_data *data)
 	{
 		center_re = data->offset_x;
 		center_im = data->offset_y;
-
 		if (key == K_NUM_PLUS)
 			data->zoom *= ZOOM_FACTOR;
 		else
 			data->zoom /= ZOOM_FACTOR;
-
 		data->redraw = 1;
 	}
 }
-
-
 
 void	handle_iter_adjustment(int key, t_data *data)
 {
@@ -309,18 +305,15 @@ int	mouse_press(int button, int x, int y, t_data *data)
 	{
 		mouse_re = (x / (double)WIN_WIDTH - 0.5) * 4.0 / data->zoom + data->offset_x;
 		mouse_im = (y / (double)WIN_HEIGHT - 0.5) * 3.0 / data->zoom + data->offset_y;
-
 		zoom_factor = (button == 4) ? ZOOM_FACTOR : 1.0 / ZOOM_FACTOR;
 		data->zoom *= zoom_factor;
 
 		data->offset_x = mouse_re - (x / (double)WIN_WIDTH - 0.5) * 4.0 / data->zoom;
 		data->offset_y = mouse_im - (y / (double)WIN_HEIGHT - 0.5) * 3.0 / data->zoom;
-
 		data->redraw = 1;
 	}
 	return (0);
 }
-
 
 int	mouse_move(int x, int y, t_data *data)
 {
@@ -386,7 +379,6 @@ void	draw_fractal(t_data *data, int iter_count)
 
 	data->scale = 1.0 / (data->zoom);
 	data->iter_count = iter_count;
-	
 	if (data->fractal_type == JULIA)
 	{
 		data->real_min = -2.0 / data->zoom + data->offset_x;
@@ -397,7 +389,6 @@ void	draw_fractal(t_data *data, int iter_count)
 		data->real_min = -2.5 / data->zoom + data->offset_x;
 		data->imag_min = -1.5 / data->zoom + data->offset_y;
 	}
-
 	height_per_thread = WIN_HEIGHT / NUM_THREADS;
 	i = 0;
 	while (i < NUM_THREADS)
@@ -432,7 +423,6 @@ void	*thread_draw_fractal(void *arg)
 	params.imag_min = data->imag_min;
 	params.scale = data->scale;
 	params.iter_count = data->iter_count;
-
 	y = data->y_start;
 	while (y < data->y_end)
 	{
@@ -450,8 +440,7 @@ void	draw_fractal_line(t_data *data, int y, t_fractal_params *params)
 	while (vars.x < WIN_WIDTH)
 	{
 		vars.c_real = params->real_min + ((double)vars.x / WIN_WIDTH) * 4.0 * params->scale;
-		vars.c_imag = params->imag_min + ((double)y / WIN_HEIGHT) * 3.0 * params->scale;
-		
+		vars.c_imag = params->imag_min + ((double)y / WIN_HEIGHT) * 3.0 * params->scale;	
 		vars.iter = compute_fractal(data, &vars, params->iter_count);
 		put_pixel(data, vars.x, y, get_color(vars.iter, 
 				data, vars.z_real, vars.z_imag, data->max_iter));
@@ -461,33 +450,38 @@ void	draw_fractal_line(t_data *data, int y, t_fractal_params *params)
 
 void	render_buddhabrot(t_data *data)
 {
-	t_thread_data	thread_data[NUM_THREADS];
-	pthread_t		threads[NUM_THREADS];
+	t_thread_data	*thread_data;
+	pthread_t		*threads;
 	int				i;
-	int				j;
 
-	data->histogram = ft_calloc(WIN_WIDTH * WIN_HEIGHT, sizeof(unsigned int));
+	data->histogram = (unsigned int *)ft_calloc(WIN_WIDTH * WIN_HEIGHT,
+			sizeof(unsigned int));
 	if (!data->histogram)
 	{
 		ft_printf(ERROR_MALLOC_HIST);
 		exit_fractol(data);
 	}
-	data->scale = 4.0 / (WIN_WIDTH * data->zoom);
-	data->real_min = -2.5 / data->zoom + data->offset_x;
-	data->imag_min = -1.5 / data->zoom + data->offset_y;
+	threads = (pthread_t *)malloc(NUM_THREADS * sizeof(pthread_t));
+	thread_data = (t_thread_data *)malloc(NUM_THREADS * sizeof(t_thread_data));
+	if (!threads || !thread_data)
+	{
+		free(data->histogram);
+		free(threads);
+		free(thread_data);
+		ft_printf(ERROR_MALLOC_THREAD);
+		exit_fractol(data);
+	}
 	i = 0;
 	while (i < NUM_THREADS)
 	{
 		thread_data[i].data = data;
 		thread_data[i].seed = i + 1;
-		thread_data[i].samples = SAMPLES_PER_THREAD;
-		if (pthread_create(&threads[i], NULL, thread_generate_buddhabrot,
+		if (pthread_create(&threads[i], NULL, process_buddhabrot_section,
 				&thread_data[i]) != 0)
 		{
-			j = 0;
-			while (j < i)
-				pthread_join(threads[j++], NULL);
-			free(data->histogram);
+			while (--i >= 0)
+				pthread_join(threads[i], NULL);
+			cleanup_buddhabrot(data, threads, thread_data);
 			ft_printf(ERROR_THREAD_CREATE);
 			exit_fractol(data);
 		}
@@ -496,10 +490,53 @@ void	render_buddhabrot(t_data *data)
 	i = 0;
 	while (i < NUM_THREADS)
 		pthread_join(threads[i++], NULL);
-	normalize_and_render_buddhabrot(data);
+	render_buddhabrot_image(data);
+	cleanup_buddhabrot(data, threads, thread_data);
+}
+void	cleanup_buddhabrot(t_data *data, pthread_t *threads,
+		t_thread_data *thread_data)
+{
 	free(data->histogram);
+	free(threads);
+	free(thread_data);
 }
 
+void	render_buddhabrot_image(t_data *data)
+{
+	unsigned int	max_value;
+	double		normalized;
+	int			i;
+	int			color;
+
+	max_value = find_max_value(data->histogram, WIN_WIDTH * WIN_HEIGHT);
+	if (max_value == 0)
+		return ;
+	i = 0;
+	while (i < WIN_WIDTH * WIN_HEIGHT)
+	{
+		normalized = log(1 + data->histogram[i]) / log(1 + max_value);
+		color = (int)(normalized * MAX_COLOR_VALUE);
+		put_pixel(data, i % WIN_WIDTH, i / WIN_WIDTH,
+			(color << 16) | (color << 8) | color);
+		i++;
+	}
+	mlx_put_image_to_window(data->mlx, data->win, data->img, 0, 0);
+}
+unsigned int	find_max_value(unsigned int *array, int size)
+{
+	unsigned int	max;
+	int			i;
+
+	max = 0;
+	i = 0;
+	while (i < size)
+	{
+		if (array[i] > max)
+			max = array[i];
+		i++;
+	}
+	return (max);
+}
 void	*thread_generate_buddhabrot(void *arg)
 {
 	t_thread_data	*thread;
@@ -522,58 +559,123 @@ void	*thread_generate_buddhabrot(void *arg)
 	return (NULL);
 }
 
+void	*process_buddhabrot_section(void *arg)
+{
+	t_thread_data	*thread;
+	int				i;
+	double			c_real;
+	double			c_imag;
+	int				samples_per_thread;
+
+	thread = (t_thread_data *)arg;
+	samples_per_thread = SAMPLES_PER_THREAD / NUM_THREADS;
+	srand(thread->seed);
+	i = 0;
+	while (i < samples_per_thread)
+	{
+		c_real = BUDDHA_REAL_MIN + (rand() / (double)RAND_MAX)
+			* (BUDDHA_REAL_MAX - BUDDHA_REAL_MIN);
+		c_imag = BUDDHA_IMAG_MIN + (rand() / (double)RAND_MAX)
+			* (BUDDHA_IMAG_MAX - BUDDHA_IMAG_MIN);
+		process_point(thread->data, c_real, c_imag);
+		i++;
+	}
+	return (NULL);
+}
 void	process_buddhabrot_point(t_data *data, double c_real, double c_imag)
 {
 	double	z_real;
 	double	z_imag;
+	double	tmp;
 	double	trajectory_real[MAX_ITER];
 	double	trajectory_imag[MAX_ITER];
-	double	tmp;
+	int		i;
+	int		screen_x;
+	int		screen_y;
 	int		iter;
 
-	// Vérifier si le point est dans le cardioid principal ou le bulbe période-2
-	if (is_in_main_cardioid(c_real, c_imag) || is_in_period2_bulb(c_real, c_imag))
+	if (is_in_main_cardioid(c_real, c_imag)
+		|| is_in_period2_bulb(c_real, c_imag))
 		return ;
-
 	z_real = 0.0;
 	z_imag = 0.0;
 	iter = 0;
-	
 	while (iter < data->max_iter)
 	{
-		// Sauvegarder la trajectoire
 		trajectory_real[iter] = z_real;
 		trajectory_imag[iter] = z_imag;
-		
-		// Calcul de Mandelbrot standard
 		tmp = z_real * z_real - z_imag * z_imag + c_real;
 		z_imag = 2.0 * z_real * z_imag + c_imag;
 		z_real = tmp;
-		
 		if (z_real * z_real + z_imag * z_imag > 4.0)
 		{
-			// Le point s'échappe, on trace sa trajectoire
-			update_histogram(data, trajectory_real, trajectory_imag, iter);
+			i = 0;
+			while (i < iter)
+			{
+				screen_x = (int)((trajectory_real[i] - BUDDHA_REAL_MIN)
+						/ (BUDDHA_REAL_MAX - BUDDHA_REAL_MIN) * WIN_WIDTH);
+				screen_y = (int)((trajectory_imag[i] - BUDDHA_IMAG_MIN)
+						/ (BUDDHA_IMAG_MAX - BUDDHA_IMAG_MIN) * WIN_HEIGHT);
+				if (screen_x >= 0 && screen_x < WIN_WIDTH
+					&& screen_y >= 0 && screen_y < WIN_HEIGHT)
+				{
+					pthread_mutex_lock(&data->histogram_mutex);
+					data->histogram[screen_y * WIN_WIDTH + screen_x]++;
+					pthread_mutex_unlock(&data->histogram_mutex);
+				}
+				i++;
+			}
 			break ;
 		}
 		iter++;
 	}
 }
 
-void	update_histogram(t_data *data, double *traj_real,
-			double *traj_imag, int length)
+void	process_point(t_data *data, double c_real, double c_imag)
+{
+	double			z_real;
+	double			z_imag;
+	double			tmp;
+	t_trajectory	traj;
+	int				iter;
+
+	if (is_in_main_cardioid(c_real, c_imag) || is_in_period2_bulb(c_real, c_imag))
+		return ;
+	z_real = 0.0;
+	z_imag = 0.0;
+	iter = 0;
+	while (iter < data->max_iter)
+	{
+		if (iter < MAX_ITER)
+		{
+			traj.real[iter] = z_real;
+			traj.imag[iter] = z_imag;
+		}
+		tmp = z_real * z_real - z_imag * z_imag + c_real;
+		z_imag = 2.0 * z_real * z_imag + c_imag;
+		z_real = tmp;
+		if (z_real * z_real + z_imag * z_imag > ESCAPE_RADIUS)
+		{
+			update_histogram(data, &traj, iter);
+			break ;
+		}
+		iter++;
+	}
+}
+
+void	update_histogram(t_data *data, t_trajectory *traj, int length)
 {
 	int	i;
 	int	x;
 	int	y;
 
 	i = 0;
-	while (i < length)
+	while (i < length && i < MAX_ITER)
 	{
-		// Convertir les coordonnées complexes en coordonnées d'écran
-		x = (int)((traj_real[i] - data->real_min) / data->scale);
-		y = (int)((traj_imag[i] - data->imag_min) / data->scale);
-		
+		x = (int)((traj->real[i] - BUDDHA_REAL_MIN)
+				/ (BUDDHA_REAL_MAX - BUDDHA_REAL_MIN) * WIN_WIDTH);
+		y = (int)((traj->imag[i] - BUDDHA_IMAG_MIN)
+				/ (BUDDHA_IMAG_MAX - BUDDHA_IMAG_MIN) * WIN_HEIGHT);
 		if (x >= 0 && x < WIN_WIDTH && y >= 0 && y < WIN_HEIGHT)
 		{
 			pthread_mutex_lock(&data->histogram_mutex);
@@ -594,7 +696,6 @@ void	normalize_and_render_buddhabrot(t_data *data)
 	int			x;
 	int			y;
 
-	// Trouver la valeur maximale dans l'histogramme
 	max_value = 0;
 	i = 0;
 	while (i < WIN_WIDTH * WIN_HEIGHT)
@@ -603,11 +704,8 @@ void	normalize_and_render_buddhabrot(t_data *data)
 			max_value = data->histogram[i];
 		i++;
 	}
-	
 	if (max_value == 0)
 		return ;
-
-	// Normaliser et afficher
 	y = 0;
 	while (y < WIN_HEIGHT)
 	{
@@ -615,11 +713,8 @@ void	normalize_and_render_buddhabrot(t_data *data)
 		while (x < WIN_WIDTH)
 		{
 			value = data->histogram[y * WIN_WIDTH + x];
-			// Utiliser une échelle logarithmique pour mieux distribuer les valeurs
 			normalized = log(1 + value) / log(1 + max_value);
-			color = (int)(normalized * 255);
-			
-			// Créer une couleur en niveaux de gris
+			color = (int)(normalized * 255);		
 			put_pixel(data, x, y, (color << 16) | (color << 8) | color);
 			x++;
 		}
@@ -640,7 +735,7 @@ int	is_in_period2_bulb(double x, double y)
 	double	squared;
 
 	squared = (x + 1.0) * (x + 1.0) + y * y;
-	return (squared <= 0.0625);  // 1/16
+	return (squared <= 0.0625);
 }
 
 int	get_color(int iter, t_data *data, double z_real, double z_imag, int max_iter)
@@ -885,10 +980,10 @@ int	get_color_interior_distance(int iter, double z_real,
 int	get_color_lch(int iter, int max_iter, t_data *data)
 {
 	t_color_vars	vars;
-	t_lch_color	lch;
-	int			r;
-	int			g;
-	int			b;
+	t_lch_color		lch;
+	int				r;
+	int				g;
+	int				b;
 
 	vars.t = (double)iter / max_iter;
 	lch.l = LCH_L_BASE + LCH_L_RANGE * sin(M_PI * vars.t);
@@ -970,14 +1065,12 @@ void	draw_parameters(t_data *data, int *y)
 	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, str);
 	free(str);
 	*y += 20;
-
 	temp = ft_itoa(data->max_iter);
 	str = ft_strjoin("Iterations: ", temp);
 	free(temp);
 	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, str);
 	free(str);
 	*y += 20;
-
 	str = ft_strjoin("RGB: (", ft_itoa(data->base_color.r));
 	str = str_join_free(str, ft_strdup(", "));
 	str = str_join_free(str, ft_itoa(data->base_color.g));
@@ -987,7 +1080,6 @@ void	draw_parameters(t_data *data, int *y)
 	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, str);
 	free(str);
 	*y += 20;
-
 	draw_fractal_type(data, y);
 	draw_palette_type(data, y);
 }
@@ -1041,14 +1133,10 @@ void	get_sorted_selection(t_data *data, int *x_start, int *x_end,
 	*y_start = data->select_start_y;
 	*x_end = data->select_end_x;
 	*y_end = data->select_end_y;
-
-	// S'assurer que les coordonnées sont dans le bon ordre
 	if (*x_start > *x_end)
 		ft_swap(x_start, x_end);
 	if (*y_start > *y_end)
 		ft_swap(y_start, y_end);
-
-	// Limiter la sélection à la fenêtre
 	*x_start = ft_clamp(*x_start, 0, WIN_WIDTH);
 	*x_end = ft_clamp(*x_end, 0, WIN_WIDTH);
 	*y_start = ft_clamp(*y_start, 0, WIN_HEIGHT);
@@ -1061,7 +1149,6 @@ void	draw_rectangle_edges(t_data *data, int x_start, int y_start,
 	int	x;
 	int	y;
 
-	// Dessiner les lignes horizontales
 	y = y_start;
 	while (y <= y_end)
 	{
@@ -1108,77 +1195,52 @@ void	zoom_to_selection(t_data *data)
 	get_sorted_selection(data, &x_start, &x_end, &y_start, &y_end);
 	if (x_start == x_end || y_start == y_end)
 		return ;
-
-	// Convertir le rectangle de sélection en coordonnées fractales
 	double start_x = (x_start / (double)WIN_WIDTH - 0.5) * 4.0 / data->zoom + data->offset_x;
 	double end_x = (x_end / (double)WIN_WIDTH - 0.5) * 4.0 / data->zoom + data->offset_x;
 	double start_y = (y_start / (double)WIN_HEIGHT - 0.5) * 4.0 / data->zoom + data->offset_y;
 	double end_y = (y_end / (double)WIN_HEIGHT - 0.5) * 4.0 / data->zoom + data->offset_y;
 
-	// Calculer la largeur et hauteur de la sélection en coordonnées fractales
 	selected_width = fabs(end_x - start_x);
 	selected_height = fabs(end_y - start_y);
-
-	// Calculer le facteur de zoom nécessaire pour que la sélection remplisse la fenêtre
 	zoom_factor_x = 4.0 / (selected_width * data->zoom);
 	zoom_factor_y = 4.0 / (selected_height * data->zoom);
-
-	// Utiliser le facteur le plus petit pour maintenir le ratio
 	data->zoom *= fmin(zoom_factor_x, zoom_factor_y);
-
-	// Calculer le nouveau centre
 	new_center_x = start_x + selected_width / 2.0;
 	new_center_y = start_y + selected_height / 2.0;
-
-	// Mettre à jour les offsets pour centrer la vue sur la sélection
 	data->offset_x = new_center_x;
 	data->offset_y = new_center_y;
-
 	data->redraw = 1;
 }
 
-
 void calculate_zoom_and_offset(t_data *data, int x_start, int x_end, int y_start, int y_end)
 {
-    double x_min;
-    double x_max;
-    double y_min;
-    double y_max;
+	double x_min;
+	double x_max;
+	double y_min;
+	double y_max;	
 
-
-    x_min = data->offset_x + (x_start - WIN_WIDTH / 2.0) * (4.0 / (WIN_WIDTH * data->zoom));
-    x_max = data->offset_x + (x_end - WIN_WIDTH / 2.0) * (4.0 / (WIN_WIDTH * data->zoom));
-    y_min = data->offset_y + (y_start - WIN_HEIGHT / 2.0) * (4.0 / (WIN_HEIGHT * data->zoom));
-    y_max = data->offset_y + (y_end - WIN_HEIGHT / 2.0) * (4.0 / (WIN_HEIGHT * data->zoom));
-
-    update_zoom_and_offset(data, x_min, x_max, y_min, y_max);
+	x_min = data->offset_x + (x_start - WIN_WIDTH / 2.0) * (4.0 / (WIN_WIDTH * data->zoom));
+	x_max = data->offset_x + (x_end - WIN_WIDTH / 2.0) * (4.0 / (WIN_WIDTH * data->zoom));
+	y_min = data->offset_y + (y_start - WIN_HEIGHT / 2.0) * (4.0 / (WIN_HEIGHT * data->zoom));
+	y_max = data->offset_y + (y_end - WIN_HEIGHT / 2.0) * (4.0 / (WIN_HEIGHT * data->zoom));	
+	update_zoom_and_offset(data, x_min, x_max, y_min, y_max);
 }
-
 
 void update_zoom_and_offset(t_data *data, double x_min, double x_max, double y_min, double y_max)
 {
-    double new_width = x_max - x_min;
-    double new_height = y_max - y_min;
-    double zoom_ratio_x;
-    double zoom_ratio_y;
-    double new_zoom;
+	double new_width = x_max - x_min;
+	double new_height = y_max - y_min;
+	double zoom_ratio_x;
+	double zoom_ratio_y;
+	double new_zoom;
 
-    // Calculate new zoom ratios based on the selected area
-    zoom_ratio_x = WIN_WIDTH / new_width;
-    zoom_ratio_y = WIN_HEIGHT / new_height;
-
-    // Choose the smaller zoom ratio to fit the selected area into the window
-    new_zoom = fmin(zoom_ratio_x, zoom_ratio_y);
-
-    // Update the zoom level
-    data->zoom *= new_zoom;
-
-    // Update offsets to center the selected area
-    data->offset_x = (x_min + x_max) / 2.0;
-    data->offset_y = (y_min + y_max) / 2.0;
+	zoom_ratio_x = WIN_WIDTH / new_width;
+	zoom_ratio_y = WIN_HEIGHT / new_height;
+	new_zoom = fmin(zoom_ratio_x, zoom_ratio_y);
+	data->zoom *= new_zoom;
+	data->offset_x = (x_min + x_max) / 2.0;
+	data->offset_y = (y_min + y_max) / 2.0;
 }
-
-
 
 char	*ft_ftoa(double n, int precision)
 {
@@ -1274,10 +1336,10 @@ int	compute_fractal(t_data *data, t_fractal_vars *vars, int iter_count)
 int	get_color_exp_cyclic_lch_no_shading(int iter, int max_iter, t_data *data)
 {
 	t_color_vars	vars;
-	t_lch_color	lch;
-	int		r;
-	int		g;
-	int		b;
+	t_lch_color		lch;
+	int				r;
+	int				g;
+	int			b;
 
 	vars.t = exp((double)-iter / max_iter);
 	lch.l = LCH_L_BASE;
@@ -1293,10 +1355,10 @@ int	get_color_exp_cyclic_lch_no_shading(int iter, int max_iter, t_data *data)
 int	get_color_exp_cyclic_lch_shading(int iter, int max_iter, t_data *data)
 {
 	t_color_vars	vars;
-	t_lch_color	lch;
-	int		r;
-	int		g;
-	int		b;
+	t_lch_color		lch;
+	int				r;
+	int				g;
+	int				b;
 
 	vars.t = exp((double)-iter / max_iter);
 	lch.l = LCH_L_BASE + LCH_L_RANGE * sin(2 * M_PI * vars.t);
