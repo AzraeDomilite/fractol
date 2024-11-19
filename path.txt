@@ -1,0 +1,78 @@
+src/
+├── main.c
+├── init.c
+│   ├── init_data
+│   ├── parse_arguments
+│   ├── initialize_mlx
+│   ├── reset_view
+│   └── exit_fractol
+├── event_handlers.c
+│   ├── deal_key
+│   ├── mouse_press
+│   ├── mouse_move
+│   └── mouse_release
+├── key_handlers.c
+│   ├── handle_reset_and_exit
+│   ├── handle_movement
+│   ├── handle_zoom
+│   ├── handle_iter_adjustment
+│   └── adjust_base_color_component
+├── color_handlers.c
+│   ├── adjust_fractal_parameters
+│   ├── switch_palette
+│   ├── adjust_c_values
+│   ├── get_color
+│   └── put_pixel
+├── drawing.c
+│   ├── render_next_frame
+│   ├── draw_fractal
+│   ├── thread_draw_fractal
+│   └── draw_fractal_line
+├── color_utils.c
+│   ├── hsv_to_rgb
+│   └── lch_to_rgb
+├── color_palettes.c
+│   ├── get_color_fire
+│   ├── get_color_stripes
+│   ├── get_color_smooth
+│   ├── get_color_classic
+│   └── <other color palette functions>
+├── ui_drawing.c
+│   ├── draw_info_strings
+│   ├── draw_controls
+│   ├── draw_parameters
+│   ├── draw_fractal_type
+│   └── draw_palette_type
+├── selection.c
+│   ├── draw_selection_rectangle
+│   ├── get_sorted_selection
+│   ├── draw_rectangle_edges
+│   └── zoom_to_selection
+├── julia.c
+│   └── compute_julia
+├── mandelbrot.c
+│   └── compute_mandelbrot
+├── burning_ship.c
+│   └── compute_burning_ship
+├── lyapunov.c
+│   └── compute_lyapunov
+├── newton.c
+│   └── compute_newton
+├── buddhabrot.c
+│   ├── render_buddhabrot
+│   ├── thread_generate_buddhabrot
+│   ├── process_buddhabrot_point
+│   ├── update_histogram
+│   └── normalize_and_render_buddhabrot
+├── utils_zoom.c
+│   ├── move_offset
+│   ├── calculate_zoom_and_offset
+│   └── update_zoom_and_offset
+├── utils_buddhabrot.c
+│   ├── is_in_main_cardioid
+│   └── is_in_period2_bulb
+└── utils.c
+    ├── ft_ftoa
+    ├── ft_lltoa
+    ├── ft_numlen
+    └── ft_swap

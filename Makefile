@@ -2,7 +2,7 @@ NAME = fractol
 OS = $(shell uname)
 
 CC = gcc
-CFLAGS =  -Wall -Wextra -Werror -Wdeprecated-declarations -I./include
+CFLAGS =  -Wall -Wextra -Werror -Wdeprecated-declarations -pthread -I./include
 
 LIBS_DIR = ./libs
 OBJ_DIR = ./obj
