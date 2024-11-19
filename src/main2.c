@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/19 14:18:16 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/19 14:18:16 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/19 15:23:09 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/19 15:37:12 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -351,24 +351,36 @@ int	render_next_frame(t_data *data)
 	return (0);
 }
 
-void	draw_fractal_with_iter(t_data *data, int iter_count)
+void draw_fractal_with_iter(t_data *data, int iter_count)
 {
-	if (data->img)
-		mlx_destroy_image(data->mlx, data->img);
-	data->img = mlx_new_image(data->mlx, WIN_WIDTH, WIN_HEIGHT);
-	if (!data->img)
-	{
-		ft_printf(ERROR_MSG_IMAGE);
-		exit_fractol(data);
-	}
-	data->addr = mlx_get_data_addr(data->img, &data->bpp,
-			&data->line_len, &data->endian);
-	draw_fractal(data, iter_count);
-	mlx_put_image_to_window(data->mlx, data->win, data->img, 0, 0);
-	draw_info_strings(data);
-	if (data->is_selecting)
-		draw_selection_rectangle(data);
+    if (data->img)
+        mlx_destroy_image(data->mlx, data->img);
+    data->img = mlx_new_image(data->mlx, WIN_WIDTH, WIN_HEIGHT);
+    if (!data->img)
+    {
+        ft_printf(ERROR_MSG_IMAGE);
+        exit_fractol(data);
+    }
+    data->addr = mlx_get_data_addr(data->img, &data->bpp,
+            &data->line_len, &data->endian);
+
+    if (data->fractal_type == BUDDHABROT)
+    {
+        data->max_iter = iter_count;
+        render_buddhabrot(data);
+    }
+    else
+    {
+        draw_fractal(data, iter_count);
+    }
+
+    mlx_put_image_to_window(data->mlx, data->win, data->img, 0, 0);
+    draw_info_strings(data);
+    if (data->is_selecting)
+        draw_selection_rectangle(data);
 }
+
+
 
 void	draw_fractal(t_data *data, int iter_count)
 {
@@ -501,27 +513,27 @@ void	cleanup_buddhabrot(t_data *data, pthread_t *threads,
 	free(thread_data);
 }
 
-void	render_buddhabrot_image(t_data *data)
+void render_buddhabrot_image(t_data *data)
 {
-	unsigned int	max_value;
-	double		normalized;
-	int			i;
-	int			color;
+    unsigned int max_value;
+    double normalized;
+    int i;
+    int color;
 
-	max_value = find_max_value(data->histogram, WIN_WIDTH * WIN_HEIGHT);
-	if (max_value == 0)
-		return ;
-	i = 0;
-	while (i < WIN_WIDTH * WIN_HEIGHT)
-	{
-		normalized = log(1 + data->histogram[i]) / log(1 + max_value);
-		color = (int)(normalized * MAX_COLOR_VALUE);
-		put_pixel(data, i % WIN_WIDTH, i / WIN_WIDTH,
-			(color << 16) | (color << 8) | color);
-		i++;
-	}
-	mlx_put_image_to_window(data->mlx, data->win, data->img, 0, 0);
+    max_value = find_max_value(data->histogram, WIN_WIDTH * WIN_HEIGHT);
+    if (max_value == 0)
+        return;
+    i = 0;
+    while (i < WIN_WIDTH * WIN_HEIGHT)
+    {
+        normalized = log(1 + data->histogram[i]) / log(1 + max_value);
+        color = (int)(normalized * MAX_COLOR_VALUE);
+        put_pixel(data, i % WIN_WIDTH, i / WIN_WIDTH,
+            (color << 16) | (color << 8) | color);
+        i++;
+    }
 }
+
 unsigned int	find_max_value(unsigned int *array, int size)
 {
 	unsigned int	max;
@@ -559,29 +571,27 @@ void	*thread_generate_buddhabrot(void *arg)
 	return (NULL);
 }
 
-void	*process_buddhabrot_section(void *arg)
+void *process_buddhabrot_section(void *arg)
 {
-	t_thread_data	*thread;
-	int				i;
-	double			c_real;
-	double			c_imag;
-	int				samples_per_thread;
+    t_thread_data *thread = (t_thread_data *)arg;
+    int i;
+    double c_real;
+    double c_imag;
+    int samples_per_thread;
 
-	thread = (t_thread_data *)arg;
-	samples_per_thread = SAMPLES_PER_THREAD / NUM_THREADS;
-	srand(thread->seed);
-	i = 0;
-	while (i < samples_per_thread)
-	{
-		c_real = BUDDHA_REAL_MIN + (rand() / (double)RAND_MAX)
-			* (BUDDHA_REAL_MAX - BUDDHA_REAL_MIN);
-		c_imag = BUDDHA_IMAG_MIN + (rand() / (double)RAND_MAX)
-			* (BUDDHA_IMAG_MAX - BUDDHA_IMAG_MIN);
-		process_point(thread->data, c_real, c_imag);
-		i++;
-	}
-	return (NULL);
+    samples_per_thread = SAMPLES_PER_THREAD;
+    srand(thread->seed);
+    for (i = 0; i < samples_per_thread; i++)
+    {
+        c_real = BUDDHA_REAL_MIN + ((double)rand() / RAND_MAX)
+                * (BUDDHA_REAL_MAX - BUDDHA_REAL_MIN);
+        c_imag = BUDDHA_IMAG_MIN + ((double)rand() / RAND_MAX)
+                * (BUDDHA_IMAG_MAX - BUDDHA_IMAG_MIN);
+        process_point(thread->data, c_real, c_imag);
+    }
+    return NULL;
 }
+
 void	process_buddhabrot_point(t_data *data, double c_real, double c_imag)
 {
 	double	z_real;
@@ -631,60 +641,59 @@ void	process_buddhabrot_point(t_data *data, double c_real, double c_imag)
 	}
 }
 
-void	process_point(t_data *data, double c_real, double c_imag)
+void process_point(t_data *data, double c_real, double c_imag)
 {
-	double			z_real;
-	double			z_imag;
-	double			tmp;
-	t_trajectory	traj;
-	int				iter;
+    double *traj_real = malloc(data->max_iter * sizeof(double));
+    double *traj_imag = malloc(data->max_iter * sizeof(double));
+    if (!traj_real || !traj_imag)
+    {
+        free(traj_real);
+        free(traj_imag);
+        return;
+    }
 
-	if (is_in_main_cardioid(c_real, c_imag) || is_in_period2_bulb(c_real, c_imag))
-		return ;
-	z_real = 0.0;
-	z_imag = 0.0;
-	iter = 0;
-	while (iter < data->max_iter)
-	{
-		if (iter < MAX_ITER)
-		{
-			traj.real[iter] = z_real;
-			traj.imag[iter] = z_imag;
-		}
-		tmp = z_real * z_real - z_imag * z_imag + c_real;
-		z_imag = 2.0 * z_real * z_imag + c_imag;
-		z_real = tmp;
-		if (z_real * z_real + z_imag * z_imag > ESCAPE_RADIUS)
-		{
-			update_histogram(data, &traj, iter);
-			break ;
-		}
-		iter++;
-	}
+    double z_real = 0.0;
+    double z_imag = 0.0;
+    int iter = 0;
+    while (iter < data->max_iter)
+    {
+        traj_real[iter] = z_real;
+        traj_imag[iter] = z_imag;
+        double tmp = z_real * z_real - z_imag * z_imag + c_real;
+        z_imag = 2.0 * z_real * z_imag + c_imag;
+        z_real = tmp;
+        if (z_real * z_real + z_imag * z_imag > ESCAPE_RADIUS)
+        {
+            update_histogram(data, traj_real, traj_imag, iter);
+            break;
+        }
+        iter++;
+    }
+    free(traj_real);
+    free(traj_imag);
 }
 
-void	update_histogram(t_data *data, t_trajectory *traj, int length)
-{
-	int	i;
-	int	x;
-	int	y;
 
-	i = 0;
-	while (i < length && i < MAX_ITER)
-	{
-		x = (int)((traj->real[i] - BUDDHA_REAL_MIN)
-				/ (BUDDHA_REAL_MAX - BUDDHA_REAL_MIN) * WIN_WIDTH);
-		y = (int)((traj->imag[i] - BUDDHA_IMAG_MIN)
-				/ (BUDDHA_IMAG_MAX - BUDDHA_IMAG_MIN) * WIN_HEIGHT);
-		if (x >= 0 && x < WIN_WIDTH && y >= 0 && y < WIN_HEIGHT)
-		{
-			pthread_mutex_lock(&data->histogram_mutex);
-			data->histogram[y * WIN_WIDTH + x]++;
-			pthread_mutex_unlock(&data->histogram_mutex);
-		}
-		i++;
-	}
+
+void update_histogram(t_data *data, double *traj_real, double *traj_imag, int length)
+{
+    int i;
+    for (i = 0; i < length; i++)
+    {
+        int x = (int)((traj_real[i] - BUDDHA_REAL_MIN)
+                / (BUDDHA_REAL_MAX - BUDDHA_REAL_MIN) * WIN_WIDTH);
+        int y = (int)((traj_imag[i] - BUDDHA_IMAG_MIN)
+                / (BUDDHA_IMAG_MAX - BUDDHA_IMAG_MIN) * WIN_HEIGHT);
+        if (x >= 0 && x < WIN_WIDTH && y >= 0 && y < WIN_HEIGHT)
+        {
+            pthread_mutex_lock(&data->histogram_mutex);
+            data->histogram[y * WIN_WIDTH + x]++;
+            pthread_mutex_unlock(&data->histogram_mutex);
+        }
+    }
 }
+
+
 
 void	normalize_and_render_buddhabrot(t_data *data)
 {

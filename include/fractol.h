@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/19 14:17:02 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/19 14:17:07 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/19 15:34:08 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/19 15:36:16 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -408,7 +408,7 @@ void	process_buddhabrot_point(t_data *data, double c_real, double c_imag);
 void	zoom_to_selection(t_data *data);
 void	calculate_zoom_and_offset(t_data *data, int x_start, int x_end,
             int y_start, int y_end);
-void	update_histogram(t_data *data, t_trajectory *traj, int length);
+void update_histogram(t_data *data, double *traj_real, double *traj_imag, int length);
 void	update_zoom_and_offset(t_data *data, double x_min, double x_max,
             double y_min, double y_max);
 void	render_buddhabrot_image(t_data *data);
@@ -417,4 +417,5 @@ void	process_point(t_data *data, double c_real, double c_imag);
 unsigned int	find_max_value(unsigned int *array, int size);
 void	cleanup_buddhabrot(t_data *data, pthread_t *threads,
 			t_thread_data *thread_data);
+void	render_buddhabrot(t_data *data);
 #endif
