@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   color_palettes_4.c                                 :+:      :+:    :+:   */
+/*   fractol.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 12:34:36 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:34:36 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 13:22:55 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 13:22:55 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -368,6 +368,9 @@ void	init_data(t_data *data);
 static void	init_data_colors(t_data *data);
 static void	init_data_dimensions(t_data *data);
 static void	init_data_params(t_data *data);
+static void	init_fractal_params(t_data *data, int iter_count);
+
+/* parser.c */
 void	parse_arguments(int argc, char **argv, t_data *data);
 
 /* mlx_setup.c */
@@ -425,6 +428,18 @@ void	lch_to_rgb(t_lch_color *lch, int *r, int *g, int *b);
 void	yuv_to_rgb(double y, double u, double v, int *r, int *g, int *b);
 void	hsv2rgb(float h, float s, float v, float *red, float *grn, float *blu);
 
+/* color_utils_3.c */
+static void	calculate_magnitude(double z_real, double z_imag, double *magnitude_sq, double *magnitude_val);
+static double	calculate_angle(double z_real, double z_imag);
+static int	calculate_color(unsigned int value, unsigned int max_value);
+static void	calculate_uv_components(double angle, double saturation, double *u, double *v);
+static int	apply_base_color(t_data *data, int r, int g, int b);
+
+/* color_utils_3.c */
+static void	calculate_hsv_components(float h, float v, float s, float *p, float *q, float *t);
+static void	get_rgb_from_case(int case_value, float v, float p, float q, float t, float *r, float *g, float *b);
+static void	assign_rgb_values(float r, float g, float b, float *red, float *grn, float *blu);
+
 /* color_palettes_1.c */
 int	get_color_fire(int iter, int max_iter, t_data *data);
 int	get_color_stripes(int iter, t_data *data);
@@ -453,6 +468,10 @@ int	get_color_dwell_gradient(int iter, int max_iter, t_data *data, double z_real
 double	m_continuous_dwell(int N, double R, double _Complex c);
 double	_Complex	m_dwell_gradient(int N, double R, double s, double d, double _Complex c);
 
+/* threads_init.c*/
+static void	init_thread_data(t_data *thread_data, t_data *data,int height_per_thread, int i);
+static void	cleanup_threads(pthread_t *threads, int i);
+
 /* ui_drawing_1.c */
 void	draw_info_strings(t_data *data);
 void	draw_controls(t_data *data, int *y);
@@ -480,11 +499,13 @@ int	compute_fractal(t_data *data, t_fractal_vars *vars, int iter_count);
 /* julia.c */
 int	compute_julia(t_data *data, t_fractal_vars *vars, int iter_count);
 
-/* mandelbrot_1.c */
+/* mandelbrot.c */
 int	compute_mandelbrot(t_data *data, t_fractal_vars *vars, int iter_count);
 static void	init_mandel_vars(t_fractal_vars *vars);
 static int	compute_tricorn(t_fractal_vars *vars, int iter_count);
 static int	compute_standard(t_fractal_vars *vars, int iter_count);
+
+/* burning_ship.c */
 int	compute_burning_ship(t_fractal_vars *vars, int iter_count);
 
 /* lyapunov.c */
@@ -492,12 +513,14 @@ int	compute_lyapunov(t_fractal_vars *vars, int iter_count);
 static void	init_lyap_vars(double *value, double *sum_log_deriv, int *max_iter, int iter_count);
 static int	check_value_bounds(double value, double r);
 static int	calculate_final_value(double sum_log_deriv, int iter);
-int	compute_newton(t_fractal_vars *vars, int iter_count);
+static double	get_r_value(t_fractal_vars *vars, char sequence_char);
 
 /* newton.c */
+int	compute_newton(t_fractal_vars *vars, int iter_count);
 static void	init_newton_vars(t_fractal_vars *vars);
 static double	calculate_denominator(double old_real, double old_imag);
 static void	calculate_next_z(t_fractal_vars *vars, double old_real, double old_imag, double denominator);
+static int	check_convergence(double old_real, double old_imag, double new_real, double new_imag);
 
 /* buddhabrot_1.c */
 void	render_buddhabrot(t_data *data);
@@ -519,6 +542,13 @@ void	process_point(t_data *data, double c_real, double c_imag);
 void	update_histogram(t_data *data, double *traj_real, double *traj_imag, int length);
 void	normalize_and_render_buddhabrot(t_data *data);
 void	process_buddhabrot_point(t_data *data, double c_real, double c_imag);
+
+/* buddhabrot_4.c */
+static int	allocate_trajectories(t_data *data, double **traj_real, double **traj_imag);
+static unsigned int	find_max_histogram_value(t_data *data);
+static void	render_line(t_data *data, int y, unsigned int max_value);
+static void	process_trajectory(t_data *data, double *traj_real, double *traj_imag, int iter);
+static int	calculate_color(unsigned int value, unsigned int max_value);
 
 /* utils_1.c */
 void	ft_swap(int *a, int *b);
@@ -545,4 +575,10 @@ static void	calculate_buddha_bounds(t_data *data, int x_start, int x_end, int y_
 static void	calculate_coordinates(t_data *data, int x, int y, double *coord_x, double *coord_y);
 static void	update_zoom_and_center(t_data *data, double start_x, double end_x, double start_y, double end_y);
 void update_zoom_and_offset(t_data *data, double x_min, double x_max, double y_min, double y_max);
+static char	*join_and_free(char *int_str, char *frac_str);
+static int	handle_allocation(char **int_str, char **frac_str, long long int_part, int precision);
+
+/* utils_4.c */
+static void	process_fractional_part(char *frac_str, double frac_part, int precision);
+
 #endif

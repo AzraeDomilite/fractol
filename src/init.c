@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 12:10:37 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:10:41 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 13:15:14 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 13:15:14 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,4 +63,20 @@ static void	init_data_dimensions(t_data *data)
 	data->original_height = WIN_HEIGHT;
 	data->width = WIN_WIDTH;
 	data->height = WIN_HEIGHT;
+}
+
+static void	init_fractal_params(t_data *data, int iter_count)
+{
+	data->scale = 1.0 / (data->zoom);
+	data->iter_count = iter_count;
+	if (data->fractal_type == JULIA)
+	{
+		data->real_min = -2.0 / data->zoom + data->offset_x;
+		data->imag_min = -2.0 / data->zoom + data->offset_y;
+	}
+	else
+	{
+		data->real_min = -2.5 / data->zoom + data->offset_x;
+		data->imag_min = -1.5 / data->zoom + data->offset_y;
+	}
 }
