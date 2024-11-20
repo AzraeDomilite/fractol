@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main2.c                                            :+:      :+:    :+:   */
+/*   color_palettes_4.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/19 21:38:06 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/19 21:47:24 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 12:34:36 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 12:34:36 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,11 +201,15 @@
 /* ************************************************************************** */
 /*                                   TYPES                                    */
 /* ************************************************************************** */
-struct s_data;
+struct	s_data;
+typedef struct	s_data t_data;
 
-typedef struct s_data t_data;
-
-typedef struct { unsigned char r, g, b; } colour;
+typedef struct s_color_char
+{
+	unsigned char	r;
+	unsigned char	g;
+	unsigned char	b;
+}	t_color_char;
 
 typedef enum e_fractal_type
 {
@@ -256,7 +260,6 @@ typedef enum e_palette_type
 	PALETTE_CUSTOM_INTERIOR
 }	t_palette_type;
 
-
 typedef struct s_color
 {
 	int	r;
@@ -273,35 +276,26 @@ typedef struct s_data
 	int				bpp;
 	int				line_len;
 	int				endian;
+	int				width;
+	int				height;
+	int				original_width;
+	int				original_height;
+	int				is_fullscreen;
+
 	double			zoom;
 	double			offset_x;
 	double			offset_y;
 	double			c_real;
 	double			c_imag;
-	int				redraw;
-	int				fast_mode;
-	int				max_iter;
-	int				is_selecting;
-	int				select_start_x;
-	int				select_start_y;
-	int				select_end_x;
-	int				select_end_y;
-	t_fractal_type	fractal_type;
-	t_palette_type	palette_type;
-	t_color			base_color;
-	pthread_mutex_t	histogram_mutex;
-	unsigned int	*histogram;
-	int				samples;
 	double			real_min;
 	double			imag_min;
 	double			scale;
-	int				y_start;
-	int				y_end;
+	int				max_iter;
 	int				iter_count;
-	double			buddha_real_min;
-	double			buddha_real_max;
-	double			buddha_imag_min;
-	double			buddha_imag_max;
+	t_fractal_type	fractal_type;
+
+	t_palette_type	palette_type;
+	t_color			base_color;
 	double			branch_factor;
 	double			branch_offset;
 	double			branch_base;
@@ -309,12 +303,26 @@ typedef struct s_data
 	double			line_brightness;
 	double			cell_brightness;
 	double			base_saturation;
+
+	double			buddha_real_min;
+	double			buddha_real_max;
+	double			buddha_imag_min;
+	double			buddha_imag_max;
+	pthread_mutex_t	histogram_mutex;
+	unsigned int	*histogram;
+	int				samples;
+
+	int				is_selecting;
+	int				select_start_x;
+	int				select_start_y;
+	int				select_end_x;
+	int				select_end_y;
+
+	int				redraw;
+	int				fast_mode;
 	int				overlay_enabled;
-	int				is_fullscreen;
-	int				original_width;
-	int				original_height;
-	int				width;
-	int				height;
+	int				y_start;
+	int				y_end;
 }	t_data;
 
 typedef struct s_fractal_vars
@@ -352,123 +360,189 @@ typedef struct s_lch_color
 /*                               FUNCTION PROTOTYPES                          */
 /* ************************************************************************** */
 
-/* Initialization and cleanup */
+/* main.c */
+int		main(int argc, char **argv);
+
+/* init.c */
 void	init_data(t_data *data);
+static void	init_data_colors(t_data *data);
+static void	init_data_dimensions(t_data *data);
+static void	init_data_params(t_data *data);
 void	parse_arguments(int argc, char **argv, t_data *data);
+
+/* mlx_setup.c */
 void	initialize_mlx(t_data *data);
 void	reset_view(t_data *data);
 void	exit_fractol(t_data *data);
 
-/* Event handlers */
-int		deal_key(int key, t_data *data);
+/* event_handlers.c */
+int	deal_key(int key, t_data *data);
+int	mouse_press(int button, int x, int y, t_data *data);
+int	mouse_move(int x, int y, t_data *data);
+int	mouse_release(int button, int x, int y, t_data *data);
+
+/* key_handlers_1.c */
 void	adjust_fractal_parameters(int key, t_data *data);
 void	handle_reset_and_exit(int key, t_data *data);
 void	handle_movement(int key, t_data *data);
 void	handle_zoom(int key, t_data *data);
 void	handle_iter_adjustment(int key, t_data *data);
-int		mouse_press(int button, int x, int y, t_data *data);
-int		mouse_move(int x, int y, t_data *data);
-int		mouse_release(int button, int x, int y, t_data *data);
 
-/* Drawing and rendering */
-int		render_next_frame(t_data *data);
-void	draw_fractal_with_iter(t_data *data, int iter_count);
-void	draw_fractal(t_data *data, int iter_count);
-void	*thread_draw_fractal(void *arg);
-void	draw_fractal_line(t_data *data, int y, t_fractal_params *params);
-void	put_pixel(t_data *data, int x, int y, int color);
+/* key_handlers_2.c */
+static void	handle_fast_mode(t_data *data);
+static void	handle_overlay(t_data *data);
+static void	handle_screen_mode(t_data *data);
+void	enter_fullscreen(t_data *data);
+void	exit_fullscreen(t_data *data);
 
-/* Color management */
+/* color_handlers.c */
 void	switch_palette_next(t_data *data);
 void	switch_palette_prev(t_data *data);
 void	adjust_c_imag(t_data *data, double delta);
 void	adjust_c_real(t_data *data, double delta);
 void	adjust_base_color_component(t_data *data, int key);
+
+/* color_handlers_2.c */
 void	reset_base_color_component(t_data *data, int key);
-int		get_color(int iter, t_data *data, double z_real, double z_imag,
-			int max_iter);
+
+/* drawing.c */
+int		render_next_frame(t_data *data);
+void	draw_fractal_with_iter(t_data *data, int iter_count);
+void	draw_fractal(t_data *data, int iter_count);
+void	*thread_draw_fractal(void *arg);
+void	draw_fractal_line(t_data *data, int y, t_fractal_params *params);
+
+/* color_utils_1.c */
+int	get_color(int iter, t_data *data, double z_real, double z_imag, int max_iter);
+static int	get_color_part1(int iter, t_data *data, double z_real, double z_imag, int max_iter);
+static int	get_color_part2(int iter, t_data *data, double z_real, double z_imag, int max_iter);
+static int	get_color_part3(int iter, t_data *data, double z_real, double z_imag, int max_iter);
+void	put_pixel(t_data *data, int x, int y, int color);
+
+/* color_utils_2.c */
 void	hsv_to_rgb(double h, double s, double v, int *r, int *g, int *b);
 void	lch_to_rgb(t_lch_color *lch, int *r, int *g, int *b);
+void	yuv_to_rgb(double y, double u, double v, int *r, int *g, int *b);
+void	hsv2rgb(float h, float s, float v, float *red, float *grn, float *blu);
 
-/* UI Drawing */
+/* color_palettes_1.c */
+int	get_color_fire(int iter, int max_iter, t_data *data);
+int	get_color_stripes(int iter, t_data *data);
+int	get_color_smooth(int iter, t_data *data);
+int	get_color_classic(int iter, t_data *data);
+int	get_color_logarithmic(int iter, int max_iter, t_data *data);
+
+/* color_palettes_2.c */
+int	get_color_hsv(int iter, int max_iter, t_data *data);
+int	get_color_gradient(int iter, int max_iter, t_data *data);
+int	get_color_black_white(int iter, t_data *data);
+int	get_color_escape_time(int iter, int max_iter, t_data *data);
+int	get_color_continuous_potential(int iter, double z_real, double z_imag, int max_iter, t_data *data);
+
+/* color_palettes_3.c */
+int	get_color_interior_distance(int iter, double z_real, double z_imag, int max_iter, t_data *data);
+int	get_color_lch(int iter, int max_iter, t_data *data);
+int	get_color_exp_cyclic_lch_no_shading(int iter, int max_iter, t_data *data);
+int	get_color_exp_cyclic_lch_shading(int iter, int max_iter, t_data *data);
+int	get_color_derivative_bailout(int iter, double z_real, double z_imag, t_data *data);
+
+/* color_palettes_4.c */
+int	get_color_custom_interior(int iter, int max_iter, t_data *data, double z_real, double z_imag);
+void	dwell_gradient(int width, int height, int maxiter, int i, int j, const int *counts, unsigned char *pixel, t_data *data);
+int	get_color_dwell_gradient(int iter, int max_iter, t_data *data, double z_real, double z_imag);
+double	m_continuous_dwell(int N, double R, double _Complex c);
+double	_Complex	m_dwell_gradient(int N, double R, double s, double d, double _Complex c);
+
+/* ui_drawing_1.c */
 void	draw_info_strings(t_data *data);
 void	draw_controls(t_data *data, int *y);
 void	draw_parameters(t_data *data, int *y);
+static void	draw_zoom_info(t_data *data, int *y);
+static void	draw_iter_info(t_data *data, int *y);
+
+/* ui_drawing_2.c */
+static void	draw_rgb_info(t_data *data, int *y);
+static char	*create_rgb_string(t_data *data);
 void	draw_fractal_type(t_data *data, int *y);
 void	draw_palette_type(t_data *data, int *y);
 void	draw_selection_rectangle(t_data *data);
 
-/* Movement and computation */
-void	move_offset(t_data *data, double x_factor, double y_factor);
-int		compute_fractal(t_data *data, t_fractal_vars *vars, int iter_count);
+/* selection.c */
+void	get_sorted_selection(t_data *data, int *x_start, int *x_end, int *y_start, int *y_end);
+void	draw_rectangle_edges(t_data *data, int x_start, int y_start, int x_end, int y_end);
+void	swap_int(int *a, int *b);
+void	zoom_to_selection(t_data *data);
+void	calculate_zoom_and_offset(t_data *data, int x_start, int x_end, int y_start, int y_end);
 
-/* Color functions */
-int		get_color_fire(int iter, int max_iter, t_data *data);
-int		get_color_stripes(int iter, t_data *data);
-int		get_color_smooth(int iter, t_data *data);
-int		get_color_classic(int iter, t_data *data);
-int		get_color_derivative_bailout(int iter, double z_real,
-			double z_imag, t_data *data);
-int		get_color_logarithmic(int iter, int max_iter, t_data *data);
-int		get_color_hsv(int iter, int max_iter, t_data *data);
-int		get_color_gradient(int iter, int max_iter, t_data *data);
-int		get_color_black_white(int iter, t_data *data);
-int		get_color_escape_time(int iter, int max_iter, t_data *data);
-int		get_color_continuous_potential(int iter, double z_real,
-			double z_imag, int max_iter, t_data *data);
-int		get_color_interior_distance(int iter, double z_real,
-			double z_imag, int max_iter, t_data *data);
-int		get_color_lch(int iter, int max_iter, t_data *data);
-int		get_color_exp_cyclic_lch_no_shading(int iter, int max_iter, t_data *data);
-int		get_color_custom_interior(int iter, int max_iter, t_data *data, double z_real, double z_imag);
-int		get_color_exp_cyclic_lch_shading(int iter, int max_iter, t_data *data);
-int		get_color_dwell_gradient(int iter, int max_iter, t_data *data, double z_real, double z_imag);
-double _Complex	m_dwell_gradient(int N, double R, double s, double d, double _Complex c);
-double	m_continuous_dwell(int N, double R, double _Complex c);
-void	dwell_gradient(int width, int height, int maxiter, int i, int j, const int *counts, unsigned char *pixel, t_data *data);
+/* compute.c */
+int	compute_fractal(t_data *data, t_fractal_vars *vars, int iter_count);
 
-/* Fractal computation */
-int		compute_julia(t_data *data, t_fractal_vars *vars, int iter_count);
-int		compute_mandelbrot(t_data *data, t_fractal_vars *vars, int iter_count);
-int		compute_burning_ship(t_fractal_vars *vars, int iter_count);
-int		compute_lyapunov(t_fractal_vars *vars, int iter_count);
-int		compute_newton(t_fractal_vars *vars, int iter_count);
+/* julia.c */
+int	compute_julia(t_data *data, t_fractal_vars *vars, int iter_count);
 
-/* Selection handling */
-void	get_sorted_selection(t_data *data, int *x_start, int *x_end,
-			int *y_start, int *y_end);
-void	draw_rectangle_edges(t_data *data, int x_start, int y_start,
-			int x_end, int);
+/* mandelbrot_1.c */
+int	compute_mandelbrot(t_data *data, t_fractal_vars *vars, int iter_count);
+static void	init_mandel_vars(t_fractal_vars *vars);
+static int	compute_tricorn(t_fractal_vars *vars, int iter_count);
+static int	compute_standard(t_fractal_vars *vars, int iter_count);
+int	compute_burning_ship(t_fractal_vars *vars, int iter_count);
 
+/* lyapunov.c */
+int	compute_lyapunov(t_fractal_vars *vars, int iter_count);
+static void	init_lyap_vars(double *value, double *sum_log_deriv, int *max_iter, int iter_count);
+static int	check_value_bounds(double value, double r);
+static int	calculate_final_value(double sum_log_deriv, int iter);
+int	compute_newton(t_fractal_vars *vars, int iter_count);
+
+/* newton.c */
+static void	init_newton_vars(t_fractal_vars *vars);
+static double	calculate_denominator(double old_real, double old_imag);
+static void	calculate_next_z(t_fractal_vars *vars, double old_real, double old_imag, double denominator);
+
+/* buddhabrot_1.c */
+void	render_buddhabrot(t_data *data);
+static int	init_main_histogram(t_data *data);
+static int	init_thread_resources(t_thread_data **thread_data, pthread_t **threads);
+static int	init_thread_data_arrays(t_thread_data *thread_data, t_data *data, int i);
+static int	create_and_run_threads(t_thread_data *thread_data, pthread_t *threads, t_data *data);
+
+/* buddhabrot_2.c */
+void	render_buddhabrot_image(t_data *data);
+unsigned int	find_max_value(unsigned int *array, int size);
+void	cleanup_buddhabrot(t_data *data, pthread_t *threads, t_thread_data *thread_data);
 void	*thread_generate_buddhabrot(void *arg);
+void	*process_buddhabrot_section(void *arg);
+
+/* buddhabrot_3.c */
+void	merge_local_histograms(t_data *data, t_thread_data *thread_data, int num_threads);
+void	process_point(t_data *data, double c_real, double c_imag);
+void	update_histogram(t_data *data, double *traj_real, double *traj_imag, int length);
 void	normalize_and_render_buddhabrot(t_data *data);
-int		is_in_main_cardioid(double x, double y);
-int		is_in_period2_bulb(double x, double y);
+void	process_buddhabrot_point(t_data *data, double c_real, double c_imag);
+
+/* utils_1.c */
 void	ft_swap(int *a, int *b);
-int		ft_clamp(int value, int min, int max);
+int	ft_clamp(int value, int min, int max);
 char	*ft_ftoa(double n, int precision);
 char	*ft_lltoa(long long n);
-int		ft_numlen(long long n);
-void	process_buddhabrot_point(t_data *data, double c_real, double c_imag);
-void	zoom_to_selection(t_data *data);
-void	calculate_zoom_and_offset(t_data *data, int x_start, int x_end,
-			int y_start, int y_end);
-void		update_histogram(t_data *data, double *traj_real, double *traj_imag, int length);
-void	update_zoom_and_offset(t_data *data, double x_min, double x_max,
-			double y_min, double y_max);
-void	render_buddhabrot_image(t_data *data);
-void	*process_buddhabrot_section(void *arg);
-void	process_point(t_data *data, double c_real, double c_imag);
-unsigned int	find_max_value(unsigned int *array, int size);
-void	cleanup_buddhabrot(t_data *data, pthread_t *threads,
-			t_thread_data *thread_data);
-void	render_buddhabrot(t_data *data);
-void	merge_local_histograms(t_data *data, t_thread_data *thread_data, int num_threads);
-int		mouse_press(int button, int x, int y, t_data *data);
-int		mouse_move(int x, int y, t_data *data);
-int		mouse_release(int button, int x, int y, t_data *data);
-void	enter_fullscreen(t_data *data);
-void	exit_fullscreen(t_data *data);
-void render_buddhabrot_fixed_color(t_data *data);
+int	ft_numlen(long long n);
 
+/* utils_2.c */
+char	*str_join_free(char *s1, char *s2);
+static int	check_escape(double z_real, double z_imag);
+static void	calculate_next_point(double *z_real, double *z_imag, double c_real, double c_imag);
+int	is_in_main_cardioid(double x, double y);
+int	is_in_period2_bulb(double x, double y);
+
+/* utils_3.c */
+static void	update_histogram_point(t_data *data, int screen_x, int screen_y);
+static void	calculate_screen_coords(double real, double imag, int *screen_x, int *screen_y);
+void	move_offset(t_data *data, double x_factor, double y_factor);
+void	handle_zoom(int key, t_data *data);
+static void	calculate_buddha_bounds(t_data *data, int x_start, int x_end, int y_start, int y_end);
+
+/* utils_4.c */
+static void	calculate_coordinates(t_data *data, int x, int y, double *coord_x, double *coord_y);
+static void	update_zoom_and_center(t_data *data, double start_x, double end_x, double start_y, double end_y);
+void update_zoom_and_offset(t_data *data, double x_min, double x_max, double y_min, double y_max);
 #endif

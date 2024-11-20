@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main2.c                                            :+:      :+:    :+:   */
+/*   fractol.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/19 21:48:02 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/19 22:00:09 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 12:32:49 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 12:33:42 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -972,9 +972,6 @@ void	process_point(t_data *data, double c_real, double c_imag)
 	free(traj_imag);
 }
 
-
-
-
 void update_histogram(t_data *data, double *traj_real,
 		double *traj_imag, int length)
 {
@@ -1747,15 +1744,15 @@ void	draw_rectangle_edges(t_data *data, int x_start, int y_start, int x_end, int
 
 	for (x = x_start; x <= x_end; x++)
 	{
-		put_pixel(data, x, y_start, 0xFFFFFF);
-		put_pixel(data, x, y_end, 0xFFFFFF);
+		put_pixel(data, x, y_start, COLOR_WHITE);
+		put_pixel(data, x, y_end, COLOR_WHITE);
 	}
 
 	int	y;
 	for (y = y_start; y <= y_end; y++)
 	{
-		put_pixel(data, x_start, y, 0xFFFFFF);
-		put_pixel(data, x_end, y, 0xFFFFFF);
+		put_pixel(data, x_start, y, COLOR_WHITE);
+		put_pixel(data, x_end, y, COLOR_WHITE);
 	}
 }
 
