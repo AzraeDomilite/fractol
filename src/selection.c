@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 17:46:47 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 17:48:35 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 19:40:21 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 19:40:21 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,6 @@ void	get_sorted_selection(t_data *data, t_zoom *zoom)
 	else
 		zoom->y_end = ft_clamp(data->select_end_y, 0, data->height - 1);
 }
-
-
 
 void	draw_rectangle_edges(t_data *data, t_draw_rect *rect)
 {
@@ -85,9 +83,13 @@ void calculate_zoom_and_offset(t_data *data, int x_start, int x_end, int y_start
 	double	y_min;
 	double	y_max;	
 
-	x_min = data->offset_x + (x_start - WIN_WIDTH / 2.0) * (4.0 / (WIN_WIDTH * data->zoom));
-	x_max = data->offset_x + (x_end - WIN_WIDTH / 2.0) * (4.0 / (WIN_WIDTH * data->zoom));
-	y_min = data->offset_y + (y_start - WIN_HEIGHT / 2.0) * (4.0 / (WIN_HEIGHT * data->zoom));
-	y_max = data->offset_y + (y_end - WIN_HEIGHT / 2.0) * (4.0 / (WIN_HEIGHT * data->zoom));	
+	x_min = data->offset_x + (x_start - WIN_WIDTH / 2.0)
+		* (4.0 / (WIN_WIDTH * data->zoom));
+	x_max = data->offset_x + (x_end - WIN_WIDTH / 2.0)
+		* (4.0 / (WIN_WIDTH * data->zoom));
+	y_min = data->offset_y + (y_start - WIN_HEIGHT / 2.0)
+		* (4.0 / (WIN_HEIGHT * data->zoom));
+	y_max = data->offset_y + (y_end - WIN_HEIGHT / 2.0)
+		* (4.0 / (WIN_HEIGHT * data->zoom));
 	update_zoom_and_offset(data, x_min, x_max, y_min, y_max);
 }

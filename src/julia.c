@@ -22,7 +22,8 @@ int	compute_julia(t_data *data, t_fractal_vars *vars, int iter_count)
 	vars->z_real = vars->c_real;
 	vars->z_imag = vars->c_imag;
 	iter = 0;
-	while (((z_real_sq = vars->z_real * vars->z_real) + (z_imag_sq = vars->z_imag * vars->z_imag)) <= ESCAPE_RADIUS
+	while (((z_real_sq = vars->z_real * vars->z_real)
+			+ (z_imag_sq = vars->z_imag * vars->z_imag)) <= ESCAPE_RADIUS
 		&& (iter < iter_count))
 	{
 		tmp = z_real_sq - z_imag_sq + data->c_real;

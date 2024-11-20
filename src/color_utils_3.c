@@ -12,11 +12,13 @@
 
 #include "../include/fractol.h"
 
-void	calculate_magnitude(double z_real, double z_imag, double *magnitude_sq, double *magnitude_val)
+void	calculate_magnitude(double z_real, double z_imag,
+			double *magnitude_sq, double *magnitude_val)
 {
 	*magnitude_sq = z_real * z_real + z_imag * z_imag;
 	*magnitude_val = sqrt(*magnitude_sq);
 }
+
 double	calculate_angle(double z_real, double z_imag)
 {
 	double	angle;
@@ -27,8 +29,8 @@ double	calculate_angle(double z_real, double z_imag)
 	return (angle);
 }
 
-
-void	calculate_uv_components(double angle, double saturation, double *u, double *v)
+void	calculate_uv_components(double angle,
+		double saturation, double *u, double *v)
 {
 	*u = cos(angle) * saturation;
 	*v = sin(angle) * saturation;

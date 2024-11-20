@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 14:16:40 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 14:16:40 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 19:38:13 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 19:38:13 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,10 +34,13 @@ void	calculate_screen_coords(double real, double imag,
 
 void	move_offset(t_data *data, double x_factor, double y_factor)
 {
+	double	y_shift;
+	double	x_shift;
+
 	if (data->fractal_type == BUDDHABROT)
 	{
-		double x_shift = x_factor * (data->buddha_real_max - data->buddha_real_min);
-		double y_shift = y_factor * (data->buddha_imag_max - data->buddha_imag_min);
+		x_shift = x_factor * (data->buddha_real_max - data->buddha_real_min);
+		y_shift = y_factor * (data->buddha_imag_max - data->buddha_imag_min);
 		data->buddha_real_min += x_shift;
 		data->buddha_real_max += x_shift;
 		data->buddha_imag_min += y_shift;
@@ -45,8 +48,8 @@ void	move_offset(t_data *data, double x_factor, double y_factor)
 	}
 	else
 	{
-		double x_shift = x_factor * (4.0 / data->zoom);
-		double y_shift = y_factor * (3.0 / data->zoom);
+		x_shift = x_factor * (4.0 / data->zoom);
+		y_shift = y_factor * (3.0 / data->zoom);
 		data->offset_x += x_shift;
 		data->offset_y += y_shift;
 	}

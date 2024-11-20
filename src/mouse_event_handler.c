@@ -49,7 +49,10 @@ int	mouse_press(int button, int x, int y, t_data *data)
 		handle_selection(&m_data, data);
 	else if (button == 4 || button == 5)
 	{
-		m_data.zoom_factor = (button == 4) ? ZOOM_FACTOR : 1.0 / ZOOM_FACTOR;
+		if (button == 4)
+			m_data.zoom_factor = ZOOM_FACTOR;
+		else
+			m_data.zoom_factor = 1.0 / ZOOM_FACTOR;
 		calculate_mouse_coordinates(&m_data, data);
 		update_zoom_offset(&m_data, data);
 	}

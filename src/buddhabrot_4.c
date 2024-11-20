@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 13:23:59 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 13:25:15 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 19:13:29 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 19:13:29 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ int	allocate_trajectories(t_data *data, double **traj_real, double **traj_imag)
 unsigned int	find_max_histogram_value(t_data *data)
 {
 	unsigned int	max_value;
-	int			i;
+	int				i;
 
 	max_value = 0;
 	i = 0;
@@ -57,7 +57,8 @@ void	render_line(t_data *data, int y, unsigned int max_value)
 	}
 }
 
-void	process_trajectory(t_data *data, double *traj_real, double *traj_imag, int iter)
+void	process_trajectory(t_data *data, double *traj_real,
+			double *traj_imag, int iter)
 {
 	int	i;
 	int	screen_x;

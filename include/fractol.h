@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   fractol.h                                          :+:      :+:    :+:   */
+/*   color_palettes_5.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 17:46:38 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 17:48:09 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 19:55:50 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 19:55:50 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,7 +215,7 @@ typedef struct s_color_char
 	unsigned char	r;
 	unsigned char	g;
 	unsigned char	b;
-}	t_color_char;
+}					t_color_char;
 
 typedef enum e_fractal_type
 {
@@ -232,7 +232,7 @@ typedef struct s_trajectory
 {
 	double	real[MAX_ITER];
 	double	imag[MAX_ITER];
-}	t_trajectory;
+}			t_trajectory;
 
 typedef struct s_thread_data
 {
@@ -242,7 +242,7 @@ typedef struct s_thread_data
 	double			*traj_real;
 	double			*traj_imag;
 	unsigned int	*local_histogram;
-}	t_thread_data;
+}					t_thread_data;
 
 
 typedef enum e_palette_type
@@ -271,7 +271,7 @@ typedef struct s_color
 	int	r;
 	int	g;
 	int	b;
-}	t_color;
+}		t_color;
 
 typedef struct s_data
 {
@@ -329,7 +329,17 @@ typedef struct s_data
 	int				overlay_enabled;
 	int				y_start;
 	int				y_end;
-}	t_data;
+}					t_data;
+
+typedef struct s_buddhabrot_point
+{
+	double	z_real;
+	double	z_imag;
+	double	tmp;
+	double	trajectory_real[MAX_ITER];
+	double	trajectory_imag[MAX_ITER];
+	int		iter;
+}			t_buddhabrot_point;
 
 typedef struct s_fractal_vars
 {
@@ -339,7 +349,7 @@ typedef struct s_fractal_vars
 	double	c_imag;
 	double	z_real;
 	double	z_imag;
-}	t_fractal_vars;
+}			t_fractal_vars;
 
 typedef struct s_fractal_params
 {
@@ -347,20 +357,20 @@ typedef struct s_fractal_params
 	double	imag_min;
 	double	scale;
 	int		iter_count;
-}	t_fractal_params;
+}			t_fractal_params;
 
 typedef struct s_color_vars
 {
 	double	t;
 	double	h;
-}	t_color_vars;
+}			t_color_vars;
 
 typedef struct s_lch_color
 {
 	double	l;
 	double	c;
 	double	h_deg;
-}	t_lch_color;
+}			t_lch_color;
 
 typedef struct s_mouse_data
 {
@@ -369,7 +379,7 @@ typedef struct s_mouse_data
 	double	mouse_re;
 	double	mouse_im;
 	double	zoom_factor;
-}	t_mouse_data;
+}			t_mouse_data;
 
 typedef struct s_lyap_vars
 {
@@ -380,7 +390,7 @@ typedef struct s_lyap_vars
 	double			r;
 	unsigned int	m;
 	char			*sequence;
-}	t_lyap_vars;
+}					t_lyap_vars;
 
 typedef struct s_zoom
 {
@@ -392,7 +402,7 @@ typedef struct s_zoom
 	double	start_y;
 	double	end_x;
 	double	end_y;
-}	t_zoom;
+}			t_zoom;
 
 typedef struct s_zoom_calc
 {
@@ -402,7 +412,7 @@ typedef struct s_zoom_calc
 	double	zoom_factor_y;
 	double	new_center_x;
 	double	new_center_y;
-}	t_zoom_calc;
+}			t_zoom_calc;
 
 typedef struct s_bounds
 {
@@ -412,7 +422,20 @@ typedef struct s_bounds
 	double	x_max;
 	double	y_min;
 	double	y_max;
-}	t_bounds;
+}			t_bounds;
+
+typedef struct s_color_interior
+{
+	double	magnitude_sq;
+	double	magnitude_val;
+	double	escape_value;
+	double	angle;
+	double	u;
+	double	v;
+	int		r;
+	int		g;
+	int		b;
+}	t_color_interior;
 
 typedef struct s_draw_rect
 {
@@ -422,7 +445,103 @@ typedef struct s_draw_rect
 	int	y_start;
 	int	x_end;
 	int	y_end;
-}	t_draw_rect;
+}		t_draw_rect;
+
+typedef struct s_color_args
+{
+	int		iter;
+	t_data	*data;
+	double	z_real;
+	double	z_imag;
+	int		max_iter;
+}			t_color_args;
+
+typedef struct s_color_potential
+{
+	double	zn;
+	double	nu;
+	double	t;
+	int		r;
+	int		g;
+	int		b;
+}			t_color_potential;
+
+typedef struct s_draw_line
+{
+	t_fractal_vars	vars;
+	t_color_args	args;
+	int				x;
+}					t_draw_line;
+
+typedef struct s_dwell_params
+{
+	int		N;
+	double	R;
+	double	_Complex	c;
+}						t_dwell_params;
+
+typedef struct s_color_f
+{
+	float	r;
+	float	g;
+	float	b;
+}			t_color_f;
+
+typedef struct s_gradient_data
+{
+	double	_Complex c;
+	double	_Complex gradient;
+	double	_Complex z;
+	double			vz;
+	double			vx;
+	double			vy;
+	double			vm;
+	double			m;
+	double			mx;
+	double			my;
+	double			hue;
+	double			saturation;
+	double			value;
+	t_color_f		color;
+	float			r;
+	float			g;
+	float			b;
+}					t_gradient_data;
+
+typedef struct s_color_params
+{
+	int		iter;
+	int		max_iter;
+	double	z_real;
+	double	z_imag;
+}	t_color_params;
+
+
+typedef struct s_gradient_params
+{
+	int		width;
+	int		height;
+	int		maxiter;
+	int		i;
+	int		j;
+}			t_gradient_params;
+
+typedef struct s_gradient_calc_params
+{
+	int					N;
+	double				R;
+	double				s;
+	double				d;
+	double	_Complex	c;
+}						t_gradient_calc_params;
+
+typedef struct s_process_vars
+{
+	double	c_real;
+	double	c_imag;
+	int		samples;
+	int		count;
+}			t_process_vars;
 
 /* ************************************************************************** */
 /*                               FUNCTION PROTOTYPES                          */
@@ -494,10 +613,10 @@ void	*thread_draw_fractal(void *arg);
 void	draw_fractal_line(t_data *data, int y, t_fractal_params *params);
 
 /* color_utils_1.c */
-int	get_color(int iter, t_data *data, double z_real, double z_imag, int max_iter);
-int	get_color_part1(int iter, t_data *data, double z_real, double z_imag, int max_iter);
-int	get_color_part2(int iter, t_data *data, double z_real, double z_imag, int max_iter);
-int	get_color_part3(int iter, t_data *data, double z_real, double z_imag, int max_iter);
+int	get_color(t_color_args *args);
+int	get_color_part1(t_color_args *args);
+int	get_color_part2(t_color_args *args);
+int	get_color_part3(t_color_args *args);
 void	put_pixel(t_data *data, int x, int y, int color);
 
 /* color_utils_2.c */
@@ -510,7 +629,7 @@ void	hsv2rgb(float h, float s, float v, float *red, float *grn, float *blu);
 void	calculate_magnitude(double z_real, double z_imag, double *magnitude_sq, double *magnitude_val);
 double	calculate_angle(double z_real, double z_imag);
 void	calculate_uv_components(double angle, double saturation, double *u, double *v);
-int	apply_base_color(t_data *data, int r, int g, int b);
+int		apply_base_color(t_data *data, int r, int g, int b);
 
 /* color_utils_4.c */
 void	calculate_hsv_components(float h, float v, float s, float *p, float *q, float *t);
@@ -529,7 +648,7 @@ int	get_color_hsv(int iter, int max_iter, t_data *data);
 int	get_color_gradient(int iter, int max_iter, t_data *data);
 int	get_color_black_white(int iter, t_data *data);
 int	get_color_escape_time(int iter, int max_iter, t_data *data);
-int	get_color_continuous_potential(int iter, double z_real, double z_imag, int max_iter, t_data *data);
+int	get_color_continuous_potential(t_color_args *args);
 
 /* color_palettes_3.c */
 int	get_color_interior_distance(int iter, double z_real, double z_imag, int max_iter, t_data *data);
@@ -540,10 +659,23 @@ int	get_color_derivative_bailout(int iter, double z_real, double z_imag, t_data 
 
 /* color_palettes_4.c */
 int	get_color_custom_interior(int iter, int max_iter, t_data *data, double z_real, double z_imag);
-void	dwell_gradient(int width, int height, int maxiter, int i, int j, const int *counts, unsigned char *pixel, t_data *data);
+void	dwell_gradient(t_gradient_params params, const int *counts,
+   			unsigned char *pixel, t_data *data);
 int	get_color_dwell_gradient(int iter, int max_iter, t_data *data, double z_real, double z_imag);
 double	m_continuous_dwell(int N, double R, double _Complex c);
-double	_Complex	m_dwell_gradient(int N, double R, double s, double d, double _Complex c);
+double _Complex	m_dwell_gradient(t_gradient_calc_params params);
+
+/* color_palettes_5.c */
+void	set_color(t_color *color, float value);
+t_gradient_calc_params	init_calc_params(int maxiter, double R,
+			double s, double d, double _Complex c);
+void	process_gradient(t_gradient_data *gd, t_gradient_calc_params params,
+			const int *counts, t_gradient_params gparams);
+void	apply_base_color_dwell(t_color *color, t_data *data);
+void	set_pixel_colors(unsigned char *pixel, int k, t_color *color);
+
+/* color_palettes_6.c */
+void	init_gradient_data(t_gradient_data *gd, t_gradient_params params);
 
 /* threads_init.c*/
 void	init_thread_data(t_data *thread_data, t_data *data,int height_per_thread, int i);
@@ -613,25 +745,33 @@ void	*thread_generate_buddhabrot(void *arg);
 void	*process_buddhabrot_section(void *arg);
 
 /* buddhabrot_3.c */
-void	merge_local_histograms(t_data *data, t_thread_data *thread_data, int num_threads);
+void	merge_local_histograms(t_data *data, t_thread_data *thread_data,
+			int num_threads);
 void	process_point(t_data *data, double c_real, double c_imag);
-void	update_histogram(t_data *data, double *traj_real, double *traj_imag, int length);
+void	update_histogram(t_data *data, double *traj_real,
+			double *traj_imag, int length);
 void	normalize_and_render_buddhabrot(t_data *data);
 void	process_buddhabrot_point(t_data *data, double c_real, double c_imag);
 
 /* buddhabrot_4.c */
-int	allocate_trajectories(t_data *data, double **traj_real, double **traj_imag);
+int				allocate_trajectories(t_data *data, double **traj_real,
+					double **traj_imag);
 unsigned int	find_max_histogram_value(t_data *data);
-void	render_line(t_data *data, int y, unsigned int max_value);
-void	process_trajectory(t_data *data, double *traj_real, double *traj_imag, int iter);
-int	calculate_color(unsigned int value, unsigned int max_value);
+void			render_line(t_data *data, int y, unsigned int max_value);
+void			process_trajectory(t_data *data, double *traj_real,
+					double *traj_imag, int iter);
+int				calculate_color(unsigned int value, unsigned int max_value);
+
+/* buddhabrot_4.c */
+void	init_and_check_point(double *z_real, double *z_imag,
+			double c_real, double c_imag);
 
 /* utils_1.c */
 void	ft_swap(int *a, int *b);
-int	ft_clamp(int value, int min, int max);
+int		ft_clamp(int value, int min, int max);
 char	*ft_ftoa(double n, int precision);
-char	*ft_lltoa(long long n);
-int	ft_numlen(long long n);
+char	*ft_lltoa(long long n, long long nb);
+int		ft_numlen(long long n);
 
 /* utils_2.c */
 char	*str_join_free(char *s1, char *s2);

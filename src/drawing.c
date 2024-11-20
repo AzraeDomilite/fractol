@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 12:22:01 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:22:15 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 18:20:00 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 18:20:41 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ void	*thread_draw_fractal(void *arg)
 {
 	t_data				*data;
 	t_fractal_params	params;
+	t_color_args		color_args;
 	int					y;
 
 	data = (t_data *)arg;
@@ -101,18 +102,22 @@ void	*thread_draw_fractal(void *arg)
 
 void	draw_fractal_line(t_data *data, int y, t_fractal_params *params)
 {
-	t_fractal_vars	vars;
+	t_draw_line	line;
 
-	vars.x = 0;
-	while (vars.x < WIN_WIDTH)
+	line.x = 0;
+	while (line.x < WIN_WIDTH)
 	{
-		vars.c_real = params->real_min + \
-		((double)vars.x / WIN_WIDTH) * 4.0 * params->scale;
-		vars.c_imag = params->imag_min + \
-		((double)y / WIN_HEIGHT) * 3.0 * params->scale;
-		vars.iter = compute_fractal(data, &vars, params->iter_count);
-		put_pixel(data, vars.x, y, get_color(vars.iter,
-				data, vars.z_real, vars.z_imag, data->max_iter));
-		vars.x++;
+		line.vars.c_real = params->real_min + \
+			((double)line.x / WIN_WIDTH) * 4.0 * params->scale;
+		line.vars.c_imag = params->imag_min + \
+			((double)y / WIN_HEIGHT) * 3.0 * params->scale;
+		line.vars.iter = compute_fractal(data, &line.vars, params->iter_count);
+		line.args.iter = line.vars.iter;
+		line.args.data = data;
+		line.args.z_real = line.vars.z_real;
+		line.args.z_imag = line.vars.z_imag;
+		line.args.max_iter = data->max_iter;
+		put_pixel(data, line.x, y, get_color(&line.args));
+		line.x++;
 	}
 }

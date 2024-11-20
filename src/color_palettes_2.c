@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 16:30:21 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 16:30:21 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 19:13:45 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 19:14:20 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,22 +64,19 @@ int	get_color_escape_time(int iter, int max_iter, t_data *data)
 	return ((color << 16) | (color << 8) | color);
 }
 
-int	get_color_continuous_potential(int iter, double z_real,
-		double z_imag, int max_iter, t_data *data)
+int	get_color_continuous_potential(t_color_args *args)
 {
-	double	zn;
-	double	nu;
-	double	t;
-	int		r;
-	int		g;
-	int		b;
+	t_color_potential	vars;
 
-	zn = sqrt(z_real * z_real + z_imag * z_imag);
-	nu = log(log(zn) / log(2)) / log(2);
-	t = iter + 1 - nu;
-	t = t / max_iter;
-	r = (int)(MAX_COLOR_VALUE * t * (data->base_color.r / 255.0));
-	g = (int)(MAX_COLOR_VALUE * (1 - t) * (data->base_color.g / 255.0));
-	b = (int)(MAX_COLOR_VALUE * (t * (1 - t)) * (data->base_color.b / 255.0));
-	return ((r << 16) | (g << 8) | b);
+	vars.zn = sqrt(args->z_real * args->z_real + args->z_imag * args->z_imag);
+	vars.nu = log(log(vars.zn) / log(2)) / log(2);
+	vars.t = args->iter + 1 - vars.nu;
+	vars.t = vars.t / args->max_iter;
+	vars.r = (int)(MAX_COLOR_VALUE * vars.t
+			* (args->data->base_color.r / 255.0));
+	vars.g = (int)(MAX_COLOR_VALUE * (1 - vars.t)
+			* (args->data->base_color.g / 255.0));
+	vars.b = (int)(MAX_COLOR_VALUE * (vars.t * (1 - vars.t))
+			* (args->data->base_color.b / 255.0));
+	return ((vars.r << 16) | (vars.g << 8) | vars.b);
 }

@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   fractol.h                                          :+:      :+:    :+:   */
+/*   adjust_rgb.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 14:14:16 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 14:14:16 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 19:10:01 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 19:10:01 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,8 @@ int	init_thread_data_arrays(t_thread_data *thread_data,
 	return (1);
 }
 
-int	create_and_run_threads(t_thread_data *thread_data, pthread_t *threads, t_data *data)
+int	create_and_run_threads(t_thread_data *thread_data,
+		pthread_t *threads, t_data *data)
 {
 	int	i;
 

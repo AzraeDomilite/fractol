@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main2.c                                            :+:      :+:    :+:   */
+/*   fractol.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 12:59:00 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:59:00 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 19:42:16 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 19:42:16 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,15 +47,20 @@ char	*ft_ftoa(double n, int precision)
 	return (join_and_free(int_str, frac_str));
 }
 
-char	*ft_lltoa(long long n)
+char	*ft_lltoa(long long n, long long nb)
 {
 	char		*str;
 	int			len;
 	int			sign;
-	long long	nb;
 
-	sign = (n < 0);
-	nb = (n < 0) ? -n : n;
+	sign = 0;
+	if (n < 0)
+	{
+		sign = 1;
+		nb = -n;
+	}
+	else
+		nb = n;
 	len = ft_numlen(n);
 	str = (char *)malloc(len + 1);
 	if (!str)

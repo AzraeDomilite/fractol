@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main2.c                                            :+:      :+:    :+:   */
+/*   color_palettes_3.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 12:31:06 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:31:06 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 19:23:42 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 19:23:50 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ int	get_color_exp_cyclic_lch_no_shading(int iter, int max_iter, t_data *data)
 	t_lch_color		lch;
 	int				r;
 	int				g;
-	int			b;
+	int				b;
 
 	vars.t = exp((double)-iter / max_iter);
 	lch.l = LCH_L_BASE;

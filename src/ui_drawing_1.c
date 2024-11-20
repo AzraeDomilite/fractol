@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   fractol.h                                          :+:      :+:    :+:   */
+/*   ui_drawing_1.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 14:13:10 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 14:13:10 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 19:46:03 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 19:46:03 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,34 +19,35 @@ void	draw_info_strings(t_data *data)
 	if (!data->overlay_enabled)
 		return ;
 	y = 10;
-	mlx_string_put(data->mlx, data->win, 10, y, COLOR_WHITE, "Fract'ol - 42 Project");
+	mlx_string_put(data->mlx, data->win, 10, y, COLOR_WHITE,
+		"Fract'ol - 42 Project");
 	y += 20;
 	draw_controls(data, &y);
 	draw_parameters(data, &y);
-	mlx_string_put(data->mlx, data->win, 10, y, COLOR_WHITE, data->fast_mode ? "Mode Rapide: Activé" : "Mode Rapide: Désactivé");
-	y += 20;
-	mlx_string_put(data->mlx, data->win, 10, y, COLOR_WHITE, data->is_fullscreen ? "Plein Écran: Activé" : "Plein Écran: Désactivé");
-	y += 20;
 }
-
 
 void	draw_controls(t_data *data, int *y)
 {
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Press R to reset view");
+	mlx_string_put(data->mlx, data->win, 10, *y,
+		COLOR_WHITE, "Press R to reset view");
 	*y += 20;
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Use arrow keys or WASD to move");
+	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
+		"Use arrow keys or WASD to move");
 	*y += 20;
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Use + and - to zoom");
+	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
+		"Adjust iterations with F (down) and G (up)");
 	*y += 20;
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Adjust iterations with F (down) and G (up)");
+	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
+		"Change palette with Z (previous) and X (next)");
 	*y += 20;
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Change palette with Z (previous) and X (next)");
+	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
+		"Toggle Fast Mode with 1");
 	*y += 20;
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Toggle Fast Mode with 1");
+	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
+		"Toggle Overlay with H");
 	*y += 20;
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Toggle Overlay with H");
-	*y += 20;
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, "Toggle Fullscreen with 0");
+	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
+		"Toggle Fullscreen with 0");
 	*y += 20;
 }
 

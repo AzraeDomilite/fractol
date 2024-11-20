@@ -1,29 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   threads_init.c                                     :+:      :+:    :+:   */
+/*   buddhabrot_3.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 19:46:25 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 19:46:25 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 18:38:25 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 18:38:25 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fractol.h"
 
-void	init_thread_data(t_data *thread_data, t_data *data,
-			int height_per_thread, int i)
+void	init_and_check_point(double *z_real, double *z_imag,
+			double c_real, double c_imag)
 {
-	thread_data[i] = *data;
-	thread_data[i].y_start = i * height_per_thread;
-	thread_data[i].y_end = (i + 1) * height_per_thread;
-	if (i == NUM_THREADS - 1)
-		thread_data[i].y_end = WIN_HEIGHT;
-}
-
-void	cleanup_threads(pthread_t *threads, int i)
-{
-	while (--i >= 0)
-		pthread_join(threads[i], NULL);
+	if (is_in_main_cardioid(c_real, c_imag)
+		|| is_in_period2_bulb(c_real, c_imag))
+		return ;
+	*z_real = 0.0;
+	*z_imag = 0.0;
 }

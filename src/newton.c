@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main2.c                                            :+:      :+:    :+:   */
+/*   newton.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 13:19:46 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 13:19:46 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 18:16:12 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 18:19:12 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,8 @@ double	calculate_denominator(double old_real, double old_imag)
 	return (3.0 * diff_squared * diff_squared);
 }
 
-void	calculate_next_z(t_fractal_vars *vars, double old_real, double old_imag, double denominator)
+void	calculate_next_z(t_fractal_vars *vars, double old_real,
+						double old_imag, double denominator)
 {
 	double	tmp;
 	double	real_cubed;
@@ -66,7 +67,8 @@ void	calculate_next_z(t_fractal_vars *vars, double old_real, double old_imag, do
 	vars->z_real = tmp;
 }
 
-int	check_convergence(double old_real, double old_imag, double new_real, double new_imag)
+int	check_convergence(double old_real, double old_imag,
+					double new_real, double new_imag)
 {
 	double	diff_real;
 	double	diff_imag;

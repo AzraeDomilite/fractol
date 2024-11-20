@@ -1,29 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   threads_init.c                                     :+:      :+:    :+:   */
+/*   color_palettes_5.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 19:46:25 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 19:46:25 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 18:56:42 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 18:56:42 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fractol.h"
 
-void	init_thread_data(t_data *thread_data, t_data *data,
-			int height_per_thread, int i)
+void	init_gradient_data(t_gradient_data *gd, t_gradient_params params)
 {
-	thread_data[i] = *data;
-	thread_data[i].y_start = i * height_per_thread;
-	thread_data[i].y_end = (i + 1) * height_per_thread;
-	if (i == NUM_THREADS - 1)
-		thread_data[i].y_end = WIN_HEIGHT;
-}
-
-void	cleanup_threads(pthread_t *threads, int i)
-{
-	while (--i >= 0)
-		pthread_join(threads[i], NULL);
+	gd->color.r = 0.0f;
+	gd->color.g = 0.0f;
+	gd->color.b = 0.0f;
 }

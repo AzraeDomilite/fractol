@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main2.c                                            :+:      :+:    :+:   */
+/*   key_handlers_1.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 12:15:22 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:15:22 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 19:44:12 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 19:45:09 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,17 +54,25 @@ void	handle_movement(int key, t_data *data)
 	else if (key == K_D || key == K_RIGHT)
 		move_offset(data, MOVE_FACTOR, 0);
 	else if (key == K_A || key == K_LEFT)
-		move_offset(data,- MOVE_FACTOR, 0);
+		move_offset(data, -MOVE_FACTOR, 0);
 }
 
-void handle_zoom(int key, t_data *data)
+void	handle_zoom(int key, t_data *data)
 {
-	double zoom_factor = (key == K_NUM_PLUS) ? ZOOM_FACTOR : 1.0 / ZOOM_FACTOR;
-	double center_x = (data->buddha_real_min + data->buddha_real_max) / 2.0;
-	double center_y = (data->buddha_imag_min + data->buddha_imag_max) / 2.0;
-	double width = (data->buddha_real_max - data->buddha_real_min) / zoom_factor;
-	double height = (data->buddha_imag_max - data->buddha_imag_min) / zoom_factor;
+	double	zoom_factor;
+	double	center_x;
+	double	center_y;
+	double	width;
+	double	height;
 
+	if (key == K_NUM_PLUS)
+		zoom_factor = ZOOM_FACTOR;
+	else
+		zoom_factor = 1.0 / ZOOM_FACTOR;
+	center_x = (data->buddha_real_min + data->buddha_real_max) / 2.0;
+	center_y = (data->buddha_imag_min + data->buddha_imag_max) / 2.0;
+	width = (data->buddha_real_max - data->buddha_real_min) / zoom_factor;
+	height = (data->buddha_imag_max - data->buddha_imag_min) / zoom_factor;
 	data->buddha_real_min = center_x - width / 2.0;
 	data->buddha_real_max = center_x + width / 2.0;
 	data->buddha_imag_min = center_y - height / 2.0;
