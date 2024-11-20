@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   fractol.h                                          :+:      :+:    :+:   */
+/*   color_utils_4.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 13:14:42 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 13:14:42 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 14:12:55 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 14:12:55 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fractol.h"
 
-static void	calculate_hsv_components(float h, float v, float s, float *p, float *q, float *t)
+void	calculate_hsv_components(float h, float v, float s, float *p, float *q, float *t)
 {
 	float	f;
 
@@ -22,7 +22,7 @@ static void	calculate_hsv_components(float h, float v, float s, float *p, float 
 	*t = v * (1 - (s * (1 - f)));
 }
 
-static void	get_rgb_from_case(int case_value, float v, float p, float q, float t, float *r, float *g, float *b)
+void	get_rgb_from_case(int case_value, float v, float p, float q, float t, float *r, float *g, float *b)
 {
 	if (case_value == 0)
 		(*r = v, *g = t, *b = p);
@@ -38,7 +38,7 @@ static void	get_rgb_from_case(int case_value, float v, float p, float q, float t
 		(*r = v, *g = p, *b = q);
 }
 
-static void	assign_rgb_values(float r, float g, float b, float *red, float *grn, float *blu)
+void	assign_rgb_values(float r, float g, float b, float *red, float *grn, float *blu)
 {
 	*red = r;
 	*grn = g;

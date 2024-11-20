@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   burning_ship.c                                     :+:      :+:    :+:   */
+/*   mandelbrot.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 12:50:57 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:50:57 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 14:16:13 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 14:16:13 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,13 +20,13 @@ int	compute_mandelbrot(t_data *data, t_fractal_vars *vars, int iter_count)
 	return (compute_standard(vars, iter_count));
 }
 
-static void	init_mandel_vars(t_fractal_vars *vars)
+void	init_mandel_vars(t_fractal_vars *vars)
 {
 	vars->z_real = 0.0;
 	vars->z_imag = 0.0;
 }
 
-static int	compute_tricorn(t_fractal_vars *vars, int iter_count)
+int	compute_tricorn(t_fractal_vars *vars, int iter_count)
 {
 	int		iter;
 	double	tmp;
@@ -48,7 +48,7 @@ static int	compute_tricorn(t_fractal_vars *vars, int iter_count)
 	return (iter);
 }
 
-static int	compute_standard(t_fractal_vars *vars, int iter_count)
+int	compute_standard(t_fractal_vars *vars, int iter_count)
 {
 	int		iter;
 	double	tmp;

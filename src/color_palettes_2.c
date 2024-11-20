@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 12:29:14 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:29:14 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 16:30:21 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 16:30:21 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,9 +36,9 @@ int	get_color_gradient(int iter, int max_iter, t_data *data)
 	int				b;
 
 	vars.t = (double)iter / max_iter;
-	r = (int)((1 - vars.t) * 0 + vars.t * MAX_COLOR_VALUE);
-	g = (int)((1 - vars.t) * 0 + vars.t * 165);
-	b = (int)((1 - vars.t) * MAX_COLOR_VALUE + vars.t * 0);
+	r = (int)((1 - vars.t) * GRAD_R_EXT + vars.t * GRAD_R_INT);
+	g = (int)((1 - vars.t) * GRAD_G_EXT + vars.t * GRAD_G_INT);
+	b = (int)((1 - vars.t) * GRAD_B_EXT + vars.t * GRAD_B_INT);
 	r = (r * data->base_color.r) / MAX_COLOR_VALUE;
 	g = (g * data->base_color.g) / MAX_COLOR_VALUE;
 	b = (b * data->base_color.b) / MAX_COLOR_VALUE;

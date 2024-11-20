@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main2.c                                            :+:      :+:    :+:   */
+/*   fractol.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 12:24:13 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:24:13 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 14:11:54 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 14:11:54 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ int	get_color(int iter, t_data *data, double z_real,
 	return (COLOR_BLACK);
 }
 
-static int	get_color_part1(int iter, t_data *data, double z_real,
+int	get_color_part1(int iter, t_data *data, double z_real,
 		double z_imag, int max_iter)
 {
 	if (data->palette_type == PALETTE_FIRE)
@@ -47,7 +47,7 @@ static int	get_color_part1(int iter, t_data *data, double z_real,
 	return (0);
 }
 
-static int	get_color_part2(int iter, t_data *data, double z_real,
+int	get_color_part2(int iter, t_data *data, double z_real,
 		double z_imag, int max_iter)
 {
 	if (data->palette_type == PALETTE_HSV)
@@ -67,7 +67,7 @@ static int	get_color_part2(int iter, t_data *data, double z_real,
 	return (0);
 }
 
-static int	get_color_part3(int iter, t_data *data, double z_real,
+int	get_color_part3(int iter, t_data *data, double z_real,
 		double z_imag, int max_iter)
 {
 	if (data->palette_type == PALETTE_LCH)

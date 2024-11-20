@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   fractol.h                                          :+:      :+:    :+:   */
+/*   utils_4.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 13:22:47 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 13:22:47 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 14:15:17 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 14:15:17 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fractol.h"
 
-static void	process_fractional_part(char *frac_str, double frac_part, int precision)
+void	process_fractional_part(char *frac_str, double frac_part, int precision)
 {
 	int	i;
 

@@ -12,7 +12,7 @@
 
 #include "../include/fractol.h"
 
-static void	handle_fast_mode(t_data *data)
+void	handle_fast_mode(t_data *data)
 {
 	data->fast_mode = !data->fast_mode;
 	data->redraw = 1;
@@ -22,7 +22,7 @@ static void	handle_fast_mode(t_data *data)
 		ft_printf("Mode Rapide Désactivé\n");
 }
 
-static void	handle_overlay(t_data *data)
+void	handle_overlay(t_data *data)
 {
 	data->overlay_enabled = !data->overlay_enabled;
 	data->redraw = 1;
@@ -32,7 +32,7 @@ static void	handle_overlay(t_data *data)
 		ft_printf("Overlay Désactivé\n");
 }
 
-static void	handle_screen_mode(t_data *data)
+void	handle_screen_mode(t_data *data)
 {
 	if (data->is_fullscreen)
 		exit_fullscreen(data);

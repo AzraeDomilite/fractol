@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   buddhabrot_1.c                                     :+:      :+:    :+:   */
+/*   fractol.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 13:23:48 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 13:23:48 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 14:14:16 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 14:14:16 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ void	render_buddhabrot(t_data *data)
 	cleanup_buddhabrot(data, threads, thread_data);
 }
 
-static int	init_main_histogram(t_data *data)
+int	init_main_histogram(t_data *data)
 {
 	data->histogram = (unsigned int *)ft_calloc(WIN_WIDTH * WIN_HEIGHT,
 			sizeof(unsigned int));
@@ -48,7 +48,7 @@ static int	init_main_histogram(t_data *data)
 	return (1);
 }
 
-static int	init_thread_resources(t_thread_data **thread_data,
+int	init_thread_resources(t_thread_data **thread_data,
 		pthread_t **threads)
 {
 	*threads = (pthread_t *)malloc(NUM_THREADS * sizeof(pthread_t));
@@ -58,7 +58,7 @@ static int	init_thread_resources(t_thread_data **thread_data,
 	return (1);
 }
 
-static int	init_thread_data_arrays(t_thread_data *thread_data,
+int	init_thread_data_arrays(t_thread_data *thread_data,
 		t_data *data, int i)
 {
 	thread_data[i].data = data;
@@ -74,7 +74,7 @@ static int	init_thread_data_arrays(t_thread_data *thread_data,
 	return (1);
 }
 
-static int	create_and_run_threads(t_thread_data *thread_data, pthread_t *threads, t_data *data)
+int	create_and_run_threads(t_thread_data *thread_data, pthread_t *threads, t_data *data)
 {
 	int	i;
 

@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main2.c                                            :+:      :+:    :+:   */
+/*   utils_3.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 13:00:32 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 13:00:44 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 14:16:40 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 14:16:40 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fractol.h"
 
-static void	update_histogram_point(t_data *data, int screen_x, int screen_y)
+void	update_histogram_point(t_data *data, int screen_x, int screen_y)
 {
 	if (screen_x >= 0 && screen_x < WIN_WIDTH
 		&& screen_y >= 0 && screen_y < WIN_HEIGHT)
@@ -23,7 +23,7 @@ static void	update_histogram_point(t_data *data, int screen_x, int screen_y)
 	}
 }
 
-static void	calculate_screen_coords(double real, double imag,
+void	calculate_screen_coords(double real, double imag,
 		int *screen_x, int *screen_y)
 {
 	*screen_x = (int)((real - BUDDHA_REAL_MIN)
@@ -53,39 +53,22 @@ void	move_offset(t_data *data, double x_factor, double y_factor)
 	data->redraw = 1;
 }
 
-void handle_zoom(int key, t_data *data)
+void	calculate_buddha_bounds(t_data *data, t_zoom *zoom)
 {
-	double zoom_factor = (key == K_NUM_PLUS) ? ZOOM_FACTOR : 1.0 / ZOOM_FACTOR;
-	double center_x = (data->buddha_real_min + data->buddha_real_max) / 2.0;
-	double center_y = (data->buddha_imag_min + data->buddha_imag_max) / 2.0;
-	double width = (data->buddha_real_max - data->buddha_real_min) / zoom_factor;
-	double height = (data->buddha_imag_max - data->buddha_imag_min) / zoom_factor;
+	t_bounds	bounds;
 
-	data->buddha_real_min = center_x - width / 2.0;
-	data->buddha_real_max = center_x + width / 2.0;
-	data->buddha_imag_min = center_y - height / 2.0;
-	data->buddha_imag_max = center_y + height / 2.0;
-	data->redraw = 1;
-}
-
-static void	calculate_buddha_bounds(t_data *data, int x_start,
-		int x_end, int y_start, int y_end)
-{
-	double	x_min;
-	double	x_max;
-	double	y_min;
-	double	y_max;
-	double	x_range;
-	double	y_range;
-
-	x_range = data->buddha_real_max - data->buddha_real_min;
-	y_range = data->buddha_imag_max - data->buddha_imag_min;
-	x_min = data->buddha_real_min + (double)x_start / WIN_WIDTH * x_range;
-	x_max = data->buddha_real_min + (double)x_end / WIN_WIDTH * x_range;
-	y_min = data->buddha_imag_min + (double)y_start / WIN_HEIGHT * y_range;
-	y_max = data->buddha_imag_min + (double)y_end / WIN_HEIGHT * y_range;
-	data->buddha_real_min = x_min;
-	data->buddha_real_max = x_max;
-	data->buddha_imag_min = y_min;
-	data->buddha_imag_max = y_max;
+	bounds.x_range = data->buddha_real_max - data->buddha_real_min;
+	bounds.y_range = data->buddha_imag_max - data->buddha_imag_min;
+	bounds.x_min = data->buddha_real_min + (double)zoom->x_start
+		/ WIN_WIDTH * bounds.x_range;
+	bounds.x_max = data->buddha_real_min + (double)zoom->x_end
+		/ WIN_WIDTH * bounds.x_range;
+	bounds.y_min = data->buddha_imag_min + (double)zoom->y_start
+		/ WIN_HEIGHT * bounds.y_range;
+	bounds.y_max = data->buddha_imag_min + (double)zoom->y_end
+		/ WIN_HEIGHT * bounds.y_range;
+	data->buddha_real_min = bounds.x_min;
+	data->buddha_real_max = bounds.x_max;
+	data->buddha_imag_min = bounds.y_min;
+	data->buddha_imag_max = bounds.y_max;
 }

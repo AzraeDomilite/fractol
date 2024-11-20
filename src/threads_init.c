@@ -12,7 +12,7 @@
 
 #include "../include/fractol.h"
 
-static void	init_thread_data(t_data *thread_data, t_data *data,int height_per_thread, int i)
+void	init_thread_data(t_data *thread_data, t_data *data,int height_per_thread, int i)
 {
 	thread_data[i] = *data;
 	thread_data[i].y_start = i * height_per_thread;
@@ -21,7 +21,7 @@ static void	init_thread_data(t_data *thread_data, t_data *data,int height_per_th
 		thread_data[i].y_end = WIN_HEIGHT;
 }
 
-static void	cleanup_threads(pthread_t *threads, int i)
+void	cleanup_threads(pthread_t *threads, int i)
 {
 	while (--i >= 0)
 		pthread_join(threads[i], NULL);

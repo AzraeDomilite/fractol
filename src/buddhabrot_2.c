@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 12:56:44 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:56:44 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 16:27:13 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 16:27:37 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,6 +106,7 @@ void *process_buddhabrot_section(void *arg)
 	int				samples_per_thread;
 	t_data			*data;
 
+	thread = NULL;
 	data = thread->data;
 	thread = (t_thread_data *)arg;
 	samples_per_thread = SAMPLES_PER_THREAD;

@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 13:15:14 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 13:15:14 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 16:20:37 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 16:20:40 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,9 @@ void	init_data(t_data *data)
 	}
 }
 
-static void	init_data_colors(t_data *data)
+void	init_data_colors(t_data *data)
 {
-	data->palette_type = PALETTE_CUSTOM_INTERIOR;
+	data->palette_type = PALETTE_GRADIENT;
 	data->base_color.r = MAX_COLOR_VALUE;
 	data->base_color.g = MAX_COLOR_VALUE;
 	data->base_color.b = MAX_COLOR_VALUE;
@@ -42,7 +42,7 @@ static void	init_data_colors(t_data *data)
 	data->base_saturation = 0.25;
 }
 
-static void	init_data_params(t_data *data)
+void	init_data_params(t_data *data)
 {
 	data->branch_factor = 2.0;
 	data->branch_offset = 1.0;
@@ -53,7 +53,7 @@ static void	init_data_params(t_data *data)
 	data->is_fullscreen = 0;
 }
 
-static void	init_data_dimensions(t_data *data)
+void	init_data_dimensions(t_data *data)
 {
 	data->buddha_real_min = BUDDHA_REAL_MIN;
 	data->buddha_real_max = BUDDHA_REAL_MAX;
@@ -65,7 +65,7 @@ static void	init_data_dimensions(t_data *data)
 	data->height = WIN_HEIGHT;
 }
 
-static void	init_fractal_params(t_data *data, int iter_count)
+void	init_fractal_params(t_data *data, int iter_count)
 {
 	data->scale = 1.0 / (data->zoom);
 	data->iter_count = iter_count;

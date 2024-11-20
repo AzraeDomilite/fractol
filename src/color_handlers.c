@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   color_handlers.c                                   :+:      :+:    :+:   */
+/*   fractol.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 12:18:49 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:18:49 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 16:58:28 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 16:58:28 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,22 +45,5 @@ void	adjust_c_real(t_data *data, double delta)
 		data->c_real += delta;
 	else
 		data->offset_x += delta;
-	data->redraw = 1;
-}
-
-void	adjust_base_color_component(t_data *data, int key)
-{
-	if (key == K_NUM_7)
-		ADJUST_COLOR_COMPONENT(data->base_color.r, -COLOR_ADJUST_STEP);
-	else if (key == K_NUM_9)
-		ADJUST_COLOR_COMPONENT(data->base_color.r, COLOR_ADJUST_STEP);
-	else if (key == K_NUM_4)
-		ADJUST_COLOR_COMPONENT(data->base_color.g, -COLOR_ADJUST_STEP);
-	else if (key == K_NUM_6)
-		ADJUST_COLOR_COMPONENT(data->base_color.g, COLOR_ADJUST_STEP);
-	else if (key == K_NUM_1)
-		ADJUST_COLOR_COMPONENT(data->base_color.b, -COLOR_ADJUST_STEP);
-	else if (key == K_NUM_3)
-		ADJUST_COLOR_COMPONENT(data->base_color.b, COLOR_ADJUST_STEP);
 	data->redraw = 1;
 }

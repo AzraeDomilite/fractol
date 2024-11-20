@@ -37,13 +37,13 @@ int	compute_newton(t_fractal_vars *vars, int iter_count)
 	return (iter);
 }
 
-static void	init_newton_vars(t_fractal_vars *vars)
+void	init_newton_vars(t_fractal_vars *vars)
 {
 	vars->z_real = vars->c_real;
 	vars->z_imag = vars->c_imag;
 }
 
-static double	calculate_denominator(double old_real, double old_imag)
+double	calculate_denominator(double old_real, double old_imag)
 {
 	double	diff_squared;
 
@@ -51,7 +51,7 @@ static double	calculate_denominator(double old_real, double old_imag)
 	return (3.0 * diff_squared * diff_squared);
 }
 
-static void	calculate_next_z(t_fractal_vars *vars, double old_real, double old_imag, double denominator)
+void	calculate_next_z(t_fractal_vars *vars, double old_real, double old_imag, double denominator)
 {
 	double	tmp;
 	double	real_cubed;
@@ -66,7 +66,7 @@ static void	calculate_next_z(t_fractal_vars *vars, double old_real, double old_i
 	vars->z_real = tmp;
 }
 
-static int	check_convergence(double old_real, double old_imag, double new_real, double new_imag)
+int	check_convergence(double old_real, double old_imag, double new_real, double new_imag)
 {
 	double	diff_real;
 	double	diff_imag;

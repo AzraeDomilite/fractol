@@ -1,49 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   fractol.h                                          :+:      :+:    :+:   */
+/*   lyapunov.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 12:52:15 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:52:15 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 16:44:33 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 16:45:20 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fractol.h"
 
-int	compute_lyapunov(t_fractal_vars *vars, int iter_count)
+static void	init_lyap_vars(t_lyap_vars *vars, int iter_count)
 {
-	double			value;
-	double			sum_log_deriv;
-	int				iter;
-	int				max_iter;
-	double			r;
-	unsigned int	m;
-	char			*sequence;
-
-	sequence = LYAPUNOV_SEQUENCE;
-	init_lyap_vars(&value, &sum_log_deriv, &max_iter, iter_count);
-	iter = 0;
-	while (iter < max_iter)
-	{
-		m = iter % ft_strlen(sequence);
-		r = get_r_value(vars, sequence[m]);
-		if (!check_value_bounds(value, r))
-			break ;
-		value = r * value * (1 - value);
-		sum_log_deriv += log(fabs(r * (1 - 2 * value)));
-		iter++;
-	}
-	return (calculate_final_value(sum_log_deriv, iter));
-}
-
-static void	init_lyap_vars(double *value, double *sum_log_deriv,
-		int *max_iter, int iter_count)
-{
-	*value = 0.5;
-	*sum_log_deriv = 0.0;
-	*max_iter = iter_count * ft_strlen(LYAPUNOV_SEQUENCE);
+	vars->value = 0.5;
+	vars->sum_log_deriv = 0.0;
+	vars->max_iter = iter_count * ft_strlen(LYAPUNOV_SEQUENCE);
+	vars->sequence = LYAPUNOV_SEQUENCE;
 }
 
 static int	check_value_bounds(double value, double r)
@@ -70,4 +44,23 @@ static double	get_r_value(t_fractal_vars *vars, char sequence_char)
 	if (sequence_char == 'A')
 		return (vars->c_real);
 	return (vars->c_imag);
+}
+
+int	compute_lyapunov(t_fractal_vars *vars, int iter_count)
+{
+	t_lyap_vars	l_vars;
+
+	init_lyap_vars(&l_vars, iter_count);
+	l_vars.iter = 0;
+	while (l_vars.iter < l_vars.max_iter)
+	{
+		l_vars.m = l_vars.iter % ft_strlen(l_vars.sequence);
+		l_vars.r = get_r_value(vars, l_vars.sequence[l_vars.m]);
+		if (!check_value_bounds(l_vars.value, l_vars.r))
+			break ;
+		l_vars.value = l_vars.r * l_vars.value * (1 - l_vars.value);
+		l_vars.sum_log_deriv += log(fabs(l_vars.r * (1 - 2 * l_vars.value)));
+		l_vars.iter++;
+	}
+	return (calculate_final_value(l_vars.sum_log_deriv, l_vars.iter));
 }

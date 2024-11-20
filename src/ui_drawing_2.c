@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main2.c                                            :+:      :+:    :+:   */
+/*   ui_drawing_2.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 12:46:49 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:46:49 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 17:47:13 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 17:47:13 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fractol.h"
 
-static void	draw_rgb_info(t_data *data, int *y)
+void	draw_rgb_info(t_data *data, int *y)
 {
 	char	*str;
 
@@ -25,7 +25,7 @@ static void	draw_rgb_info(t_data *data, int *y)
 	*y += 20;
 }
 
-static char	*create_rgb_string(t_data *data)
+char	*create_rgb_string(t_data *data)
 {
 	char	*str;
 
@@ -85,13 +85,15 @@ void	draw_palette_type(t_data *data, int *y)
 
 void	draw_selection_rectangle(t_data *data)
 {
-	int	x_start;
-	int	y_start;
-	int	x_end;
-	int	y_end;
+	t_zoom		zoom;
+	t_draw_rect	rect;
 
-	get_sorted_selection(data, &x_start, &x_end, &y_start, &y_end);
-	if (x_start == x_end || y_start == y_end)
-		return;
-	draw_rectangle_edges(data, x_start, y_start, x_end, y_end);
+	get_sorted_selection(data, &zoom);
+	if (zoom.x_start == zoom.x_end || zoom.y_start == zoom.y_end)
+		return ;
+	rect.x_start = zoom.x_start;
+	rect.y_start = zoom.y_start;
+	rect.x_end = zoom.x_end;
+	rect.y_end = zoom.y_end;
+	draw_rectangle_edges(data, &rect);
 }

@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main2.c                                            :+:      :+:    :+:   */
+/*   fractol.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 12:45:18 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:45:18 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 14:13:10 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 14:13:10 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ void	draw_parameters(t_data *data, int *y)
 	draw_palette_type(data, y);
 }
 
-static void	draw_zoom_info(t_data *data, int *y)
+void	draw_zoom_info(t_data *data, int *y)
 {
 	char	*str;
 	char	*temp;
@@ -72,7 +72,7 @@ static void	draw_zoom_info(t_data *data, int *y)
 	*y += 20;
 }
 
-static void	draw_iter_info(t_data *data, int *y)
+void	draw_iter_info(t_data *data, int *y)
 {
 	char	*str;
 	char	*temp;

@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main2.c                                            :+:      :+:    :+:   */
+/*   buddhabrot_4.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 13:08:58 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 13:08:58 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 13:23:59 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 13:25:15 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fractol.h"
 
-static int	allocate_trajectories(t_data *data, double **traj_real, double **traj_imag)
+int	allocate_trajectories(t_data *data, double **traj_real, double **traj_imag)
 {
 	*traj_real = malloc(data->max_iter * sizeof(double));
 	*traj_imag = malloc(data->max_iter * sizeof(double));
@@ -25,7 +25,7 @@ static int	allocate_trajectories(t_data *data, double **traj_real, double **traj
 	return (1);
 }
 
-static unsigned int	find_max_histogram_value(t_data *data)
+unsigned int	find_max_histogram_value(t_data *data)
 {
 	unsigned int	max_value;
 	int			i;
@@ -41,7 +41,7 @@ static unsigned int	find_max_histogram_value(t_data *data)
 	return (max_value);
 }
 
-static void	render_line(t_data *data, int y, unsigned int max_value)
+void	render_line(t_data *data, int y, unsigned int max_value)
 {
 	int				x;
 	unsigned int	value;
@@ -57,7 +57,7 @@ static void	render_line(t_data *data, int y, unsigned int max_value)
 	}
 }
 
-static void	process_trajectory(t_data *data, double *traj_real, double *traj_imag, int iter)
+void	process_trajectory(t_data *data, double *traj_real, double *traj_imag, int iter)
 {
 	int	i;
 	int	screen_x;
@@ -73,7 +73,7 @@ static void	process_trajectory(t_data *data, double *traj_real, double *traj_ima
 	}
 }
 
-static int	calculate_color(unsigned int value, unsigned int max_value)
+int	calculate_color(unsigned int value, unsigned int max_value)
 {
 	double	normalized;
 	int		color;
@@ -82,4 +82,3 @@ static int	calculate_color(unsigned int value, unsigned int max_value)
 	color = (int)(normalized * 255);
 	return ((color << 16) | (color << 8) | color);
 }
-

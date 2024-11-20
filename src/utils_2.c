@@ -6,7 +6,7 @@
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/20 12:59:50 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:59:50 by blucken          ###   ########.ch       */
+/*   Updated: 2024/11/20 14:15:37 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,12 @@ char	*str_join_free(char *s1, char *s2)
 	return (result);
 }
 
-static int	check_escape(double z_real, double z_imag)
+int	check_escape(double z_real, double z_imag)
 {
 	return (z_real * z_real + z_imag * z_imag > ESCAPE_RADIUS);
 }
 
-static void	calculate_next_point(double *z_real, double *z_imag,
+void	calculate_next_point(double *z_real, double *z_imag,
 		double c_real, double c_imag)
 {
 	double	tmp;

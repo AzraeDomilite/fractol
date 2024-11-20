@@ -1,44 +1,45 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main2.c                                            :+:      :+:    :+:   */
+/*   utils_4.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 13:21:26 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 13:21:26 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/20 17:42:31 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/20 17:42:31 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fractol.h"
 
-static void	calculate_coordinates(t_data *data, int x, int y,
-		double *coord_x, double *coord_y)
+void	calculate_coordinates(t_data *data, t_zoom *zoom)
 {
-	*coord_x = (x / (double)WIN_WIDTH - 0.5) * 4.0 / data->zoom
-		+ data->offset_x;
-	*coord_y = (y / (double)WIN_HEIGHT - 0.5) * 4.0 / data->zoom
-		+ data->offset_y;
+	zoom->start_x = (zoom->x_start / (double)WIN_WIDTH - 0.5) * 4.0
+		/ data->zoom + data->offset_x;
+	zoom->start_y = (zoom->y_start / (double)WIN_HEIGHT - 0.5) * 4.0
+		/ data->zoom + data->offset_y;
+	zoom->end_x = (zoom->x_end / (double)WIN_WIDTH - 0.5) * 4.0
+		/ data->zoom + data->offset_x;
+	zoom->end_y = (zoom->y_end / (double)WIN_HEIGHT - 0.5) * 4.0
+		/ data->zoom + data->offset_y;
 }
 
-static void	update_zoom_and_center(t_data *data, double start_x, double end_x, double start_y, double end_y)
+void	update_zoom_and_center(t_data *data, t_zoom *zoom)
 {
-	double	selected_width;
-	double	selected_height;
-	double	zoom_factor_x;
-	double	zoom_factor_y;
-	double	new_center_x;
-	double	new_center_y;
+	t_zoom_calc	calc;
 
-	selected_width = fabs(end_x - start_x);
-	selected_height = fabs(end_y - start_y);
-	zoom_factor_x = 4.0 / (selected_width * data->zoom);
-	zoom_factor_y = 4.0 / (selected_height * data->zoom);
-	data->zoom *= fmin(zoom_factor_x, zoom_factor_y);
-	new_center_x = start_x + selected_width / 2.0;
-	new_center_y = start_y + selected_height / 2.0;
-	data->offset_x = new_center_x;
-	data->offset_y = new_center_y;
+	calc.selected_width = fabs(zoom->end_x - zoom->start_x);
+	calc.selected_height = fabs(zoom->end_y - zoom->start_y);
+	calc.zoom_factor_x = 4.0 / (calc.selected_width * data->zoom);
+	calc.zoom_factor_y = 4.0 / (calc.selected_height * data->zoom);
+	if (calc.zoom_factor_x < calc.zoom_factor_y)
+		data->zoom *= calc.zoom_factor_x;
+	else
+		data->zoom *= calc.zoom_factor_y;
+	calc.new_center_x = zoom->start_x + calc.selected_width / 2.0;
+	calc.new_center_y = zoom->start_y + calc.selected_height / 2.0;
+	data->offset_x = calc.new_center_x;
+	data->offset_y = calc.new_center_y;
 }
 
 void update_zoom_and_offset(t_data *data, double x_min, double x_max, double y_min, double y_max)
@@ -57,7 +58,7 @@ void update_zoom_and_offset(t_data *data, double x_min, double x_max, double y_m
 	data->offset_y = (y_min + y_max) / 2.0;
 }
 
-static char	*join_and_free(char *int_str, char *frac_str)
+char	*join_and_free(char *int_str, char *frac_str)
 {
 	char	*result;
 
@@ -67,7 +68,8 @@ static char	*join_and_free(char *int_str, char *frac_str)
 	return (result);
 }
 
-static int	handle_allocation(char **int_str, char **frac_str, long long int_part, int precision)
+int	handle_allocation(char **int_str, char **frac_str,
+	long long int_part, int precision)
 {
 	*int_str = ft_lltoa(int_part);
 	if (!(*int_str))
