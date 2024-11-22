@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   color_palettes_6.c                                 :+:      :+:    :+:   */
+/*   color_utils_2.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/22 17:08:19 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/22 17:09:54 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/22 17:40:51 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/22 17:41:01 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,6 @@ void	lch_to_rgb(t_lch_color *lch, int *r, int *g, int *b)
 	else if (*b > MAX_COLOR_VALUE)
 		*b = MAX_COLOR_VALUE;
 }
-
 
 void	yuv_to_rgb(t_color_interior vars, int *r, int *g, int *b)
 {
