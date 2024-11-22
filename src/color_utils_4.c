@@ -5,42 +5,80 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 14:12:55 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 14:12:55 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/22 17:03:07 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/22 17:03:07 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fractol.h"
 
-void	calculate_hsv_components(float h, float v, float s, float *p, float *q, float *t)
+void	calculate_hsv_components(t_gradient_data gd, float *p,
+			float *q, float *t)
+
 {
 	float	f;
 
-	f = h - floorf(h);
-	*p = v * (1 - s);
-	*q = v * (1 - (s * f));
-	*t = v * (1 - (s * (1 - f)));
+	f = gd.hue - floorf(gd.hue);
+	*p = gd.value * (1 - gd.saturation);
+	*q = gd.value * (1 - (gd.saturation * f));
+	*t = gd.value * (1 - (gd.saturation * (1 - f)));
 }
 
-void	get_rgb_from_case(int case_value, float v, float p, float q, float t, float *r, float *g, float *b)
+void	get_rgb_from_case(t_hsv_to_rgb hsv, float *r, float *g, float *b)
 {
-	if (case_value == 0)
-		(*r = v, *g = t, *b = p);
-	else if (case_value == 1)
-		(*r = q, *g = v, *b = p);
-	else if (case_value == 2)
-		(*r = p, *g = v, *b = t);
-	else if (case_value == 3)
-		(*r = p, *g = q, *b = v);
-	else if (case_value == 4)
-		(*r = t, *g = p, *b = v);
+	if (hsv.case_value >= 0 && hsv.case_value <= 2)
+		handle_case_0_to_2(hsv, r, g, b);
 	else
-		(*r = v, *g = p, *b = q);
+		handle_case_3_to_5(hsv, r, g, b);
 }
 
-void	assign_rgb_values(float r, float g, float b, float *red, float *grn, float *blu)
+void	handle_case_0_to_2(t_hsv_to_rgb hsv, float *r, float *g, float *b)
 {
-	*red = r;
-	*grn = g;
-	*blu = b;
+	if (hsv.case_value == 0)
+	{
+		*r = hsv.case_value;
+		*g = hsv.t;
+		*b = hsv.p;
+	}
+	else if (hsv.case_value == 1)
+	{
+		*r = hsv.q;
+		*g = hsv.case_value;
+		*b = hsv.p;
+	}
+	else
+	{
+		*r = hsv.p;
+		*g = hsv.case_value;
+		*b = hsv.t;
+	}
+}
+
+void	handle_case_3_to_5(t_hsv_to_rgb hsv, float *r, float *g, float *b)
+{
+	if (hsv.case_value == 3)
+	{
+		*r = hsv.p;
+		*g = hsv.q;
+		*b = hsv.case_value;
+	}
+	else if (hsv.case_value == 4)
+	{
+		*r = hsv.t;
+		*g = hsv.p;
+		*b = hsv.case_value;
+	}
+	else
+	{
+		*r = hsv.case_value;
+		*g = hsv.p;
+		*b = hsv.q;
+	}
+}
+
+void	assign_rgb_values(t_hsv_to_rgb hsv, float *red, float *grn, float *blu)
+{
+	*red = hsv.r;
+	*grn = hsv.g;
+	*blu = hsv.b;
 }

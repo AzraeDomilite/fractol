@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 19:46:03 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 19:46:03 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/21 18:46:00 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/21 18:46:00 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,13 +41,7 @@ void	draw_controls(t_data *data, int *y)
 		"Change palette with Z (previous) and X (next)");
 	*y += 20;
 	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
-		"Toggle Fast Mode with 1");
-	*y += 20;
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
 		"Toggle Overlay with H");
-	*y += 20;
-	mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE,
-		"Toggle Fullscreen with 0");
 	*y += 20;
 }
 

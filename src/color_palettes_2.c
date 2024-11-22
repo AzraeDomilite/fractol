@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   color_palettes_2.c                                 :+:      :+:    :+:   */
+/*   color_utils_2.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 19:13:45 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 19:14:20 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/21 14:12:01 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/21 14:46:33 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ int	get_color_hsv(int iter, int max_iter, t_data *data)
 
 	vars.t = (double)iter / max_iter;
 	vars.h = vars.t * HSV_HUE_MAX;
-	hsv_to_rgb(vars.h, HSV_SATURATION, HSV_VALUE, &r, &g, &b);
+	hsv_to_rgb(vars.h, &r, &g, &b);
 	r = (r * data->base_color.r) / MAX_COLOR_VALUE;
 	g = (g * data->base_color.g) / MAX_COLOR_VALUE;
 	b = (b * data->base_color.b) / MAX_COLOR_VALUE;

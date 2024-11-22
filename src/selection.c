@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 19:40:21 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 19:40:21 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/21 13:50:59 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/21 13:51:21 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,20 +76,15 @@ void	zoom_to_selection(t_data *data)
 	data->redraw = 1;
 }
 
-void calculate_zoom_and_offset(t_data *data, int x_start, int x_end, int y_start, int y_end)
+void	calculate_zoom_and_offset(t_data *data, t_zoom zoom)
 {
-	double	x_min;
-	double	x_max;
-	double	y_min;
-	double	y_max;	
-
-	x_min = data->offset_x + (x_start - WIN_WIDTH / 2.0)
+	zoom.x_min = data->offset_x + (zoom.x_start - WIN_WIDTH / 2.0)
 		* (4.0 / (WIN_WIDTH * data->zoom));
-	x_max = data->offset_x + (x_end - WIN_WIDTH / 2.0)
+	zoom.x_max = data->offset_x + (zoom.x_end - WIN_WIDTH / 2.0)
 		* (4.0 / (WIN_WIDTH * data->zoom));
-	y_min = data->offset_y + (y_start - WIN_HEIGHT / 2.0)
+	zoom.y_min = data->offset_y + (zoom.y_start - WIN_HEIGHT / 2.0)
 		* (4.0 / (WIN_HEIGHT * data->zoom));
-	y_max = data->offset_y + (y_end - WIN_HEIGHT / 2.0)
+	zoom.y_max = data->offset_y + (zoom.y_end - WIN_HEIGHT / 2.0)
 		* (4.0 / (WIN_HEIGHT * data->zoom));
-	update_zoom_and_offset(data, x_min, x_max, y_min, y_max);
+	update_zoom_and_offset(data, zoom);
 }

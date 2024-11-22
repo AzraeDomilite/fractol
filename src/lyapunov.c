@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   lyapunov.c                                         :+:      :+:    :+:   */
+/*   color_palettes_4.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 16:44:33 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 16:45:20 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/22 17:17:42 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/22 17:17:42 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fractol.h"
 
-static void	init_lyap_vars(t_lyap_vars *vars, int iter_count)
+void	init_lyap_vars(t_lyap_vars *vars, int iter_count)
 {
 	vars->value = 0.5;
 	vars->sum_log_deriv = 0.0;
@@ -20,7 +20,7 @@ static void	init_lyap_vars(t_lyap_vars *vars, int iter_count)
 	vars->sequence = LYAPUNOV_SEQUENCE;
 }
 
-static int	check_value_bounds(double value, double r)
+int	check_value_bounds(double value, double r)
 {
 	if (r < 0 || r > 4)
 		return (0);
@@ -29,7 +29,7 @@ static int	check_value_bounds(double value, double r)
 	return (1);
 }
 
-static int	calculate_final_value(double sum_log_deriv, int iter)
+int	calculate_final_value(double sum_log_deriv, int iter)
 {
 	if (iter == 0)
 		return (0);
@@ -39,7 +39,7 @@ static int	calculate_final_value(double sum_log_deriv, int iter)
 	return (0);
 }
 
-static double	get_r_value(t_fractal_vars *vars, char sequence_char)
+double	get_r_value(t_fractal_vars *vars, char sequence_char)
 {
 	if (sequence_char == 'A')
 		return (vars->c_real);

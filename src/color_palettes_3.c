@@ -1,28 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   color_palettes_3.c                                 :+:      :+:    :+:   */
+/*   color_utils_1.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 19:23:42 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 19:23:50 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/21 13:53:45 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/21 13:54:54 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fractol.h"
 
-int	get_color_interior_distance(int iter, double z_real,
-		double z_imag, int max_iter, t_data *data)
+int	get_color_interior_distance(t_color_args *args)
 {
 	double	distance;
 	double	normalized;
 	int		color;
 
-	(void)data;
-	if (iter == max_iter)
+	if (args->iter == args->max_iter)
 	{
-		distance = sqrt(z_real * z_real + z_imag * z_imag);
+		distance = sqrt(args->z_real * args->z_real
+				+ args->z_imag * args->z_imag);
 		normalized = log(distance) / log(ESCAPE_RADIUS);
 		color = (int)(normalized * MAX_COLOR_VALUE) % (MAX_COLOR_VALUE + 1);
 		return ((color << 16) | (color << 8) | color);

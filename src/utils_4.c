@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 17:42:31 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 19:43:15 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/21 13:47:40 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/21 13:50:46 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ void	update_zoom_and_center(t_data *data, t_zoom *zoom)
 	data->offset_y = calc.new_center_y;
 }
 
-void update_zoom_and_offset(t_data *data, double x_min, double x_max, double y_min, double y_max)
+void	update_zoom_and_offset(t_data *data, t_zoom zoom)
 {
 	double	new_width;
 	double	new_height;
@@ -50,14 +50,14 @@ void update_zoom_and_offset(t_data *data, double x_min, double x_max, double y_m
 	double	zoom_ratio_y;
 	double	new_zoom;
 
-	new_width = x_max - x_min;
-	new_height = y_max - y_min;
+	new_width = zoom.x_max - zoom.x_min;
+	new_height = zoom.y_max - zoom.y_min;
 	zoom_ratio_x = WIN_WIDTH / new_width;
 	zoom_ratio_y = WIN_HEIGHT / new_height;
 	new_zoom = fmin(zoom_ratio_x, zoom_ratio_y);
 	data->zoom *= new_zoom;
-	data->offset_x = (x_min + x_max) / 2.0;
-	data->offset_y = (y_min + y_max) / 2.0;
+	data->offset_x = (zoom.x_min + zoom.x_max) / 2.0;
+	data->offset_y = (zoom.y_min + zoom.y_max) / 2.0;
 }
 
 char	*join_and_free(char *int_str, char *frac_str)

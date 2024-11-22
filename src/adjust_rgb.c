@@ -6,13 +6,13 @@
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/20 17:00:29 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 17:00:29 by blucken          ###   ########.ch       */
+/*   Updated: 2024/11/22 17:09:47 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fractol.h"
 
-static void	adjust_red(t_data *data, int key)
+void	adjust_red(t_data *data, int key)
 {
 	if (key == K_NUM_7)
 	{
@@ -30,7 +30,7 @@ static void	adjust_red(t_data *data, int key)
 	}
 }
 
-static void	adjust_green(t_data *data, int key)
+void	adjust_green(t_data *data, int key)
 {
 	if (key == K_NUM_4)
 	{
@@ -48,7 +48,7 @@ static void	adjust_green(t_data *data, int key)
 	}
 }
 
-static void	adjust_blue(t_data *data, int key)
+void	adjust_blue(t_data *data, int key)
 {
 	if (key == K_NUM_1)
 	{

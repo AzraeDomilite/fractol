@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   color_utils_2.c                                    :+:      :+:    :+:   */
+/*   color_palettes_1.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 18:13:02 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 18:13:02 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/22 17:08:55 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/22 17:18:44 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,10 +28,24 @@ int	get_color_fire(int iter, int max_iter, t_data *data)
 	r = (r * data->base_color.r) / MAX_COLOR_VALUE;
 	g = (g * data->base_color.g) / MAX_COLOR_VALUE;
 	b = (b * data->base_color.b) / MAX_COLOR_VALUE;
-	r = MIN(MAX(r, 0), MAX_COLOR_VALUE);
-	g = MIN(MAX(g, 0), MAX_COLOR_VALUE);
-	b = MIN(MAX(b, 0), MAX_COLOR_VALUE);
+	limit_color_values(&r, &g, &b);
 	return ((r << 16) | (g << 8) | b);
+}
+
+void	limit_color_values(int *r, int *g, int *b)
+{
+	if (*r < 0)
+		*r = 0;
+	else if (*r > MAX_COLOR_VALUE)
+		*r = MAX_COLOR_VALUE;
+	if (*g < 0)
+		*g = 0;
+	else if (*g > MAX_COLOR_VALUE)
+		*g = MAX_COLOR_VALUE;
+	if (*b < 0)
+		*b = 0;
+	else if (*b > MAX_COLOR_VALUE)
+		*b = MAX_COLOR_VALUE;
 }
 
 int	get_color_stripes(int iter, t_data *data)
@@ -65,19 +79,5 @@ int	get_color_classic(int iter, t_data *data)
 	int	color;
 
 	color = (iter * MAX_COLOR_VALUE / data->max_iter) % (MAX_COLOR_VALUE + 1);
-	return ((color << 16) | (color << 8) | color);
-}
-
-int	get_color_logarithmic(int iter, int max_iter, t_data *data)
-{
-	double	normalized;
-	int		color;
-
-	(void)data;
-	if (iter < max_iter)
-		normalized = log((double)iter) / log((double)max_iter);
-	else
-		normalized = 0;
-	color = (int)(normalized * MAX_COLOR_VALUE);
 	return ((color << 16) | (color << 8) | color);
 }

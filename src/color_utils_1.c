@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   color_utils_1.c                                    :+:      :+:    :+:   */
+/*   color_palettes_4.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 18:14:06 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 18:14:06 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/21 14:03:00 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/21 14:03:00 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,8 +59,7 @@ int	get_color_part2(t_color_args *args)
 	if (args->data->palette_type == PALETTE_CONTINUOUS_POTENTIAL)
 		return (get_color_continuous_potential(args));
 	if (args->data->palette_type == PALETTE_INTERIOR_DISTANCE)
-		return (get_color_interior_distance(args->iter, args->z_real,
-				args->z_imag, args->max_iter, args->data));
+		return (get_color_interior_distance(args));
 	return (0);
 }
 
@@ -75,11 +74,9 @@ int	get_color_part3(t_color_args *args)
 		return (get_color_exp_cyclic_lch_shading(args->iter,
 				args->max_iter, args->data));
 	if (args->data->palette_type == PALETTE_DWELL_GRADIENT)
-		return (get_color_dwell_gradient(args->iter, args->max_iter,
-				args->data, args->z_real, args->z_imag));
+		return (get_color_dwell_gradient(args));
 	if (args->data->palette_type == PALETTE_CUSTOM_INTERIOR)
-		return (get_color_custom_interior(args->iter, args->max_iter,
-				args->data, args->z_real, args->z_imag));
+		return (get_color_custom_interior(args));
 	return (0);
 }
 

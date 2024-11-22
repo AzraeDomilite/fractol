@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   mouse_event_handler.c                              :+:      :+:    :+:   */
+/*   fractol.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 16:42:32 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 16:42:32 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/22 17:10:01 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/22 17:10:01 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fractol.h"
 
-static void	handle_selection(t_mouse_data *m_data, t_data *data)
+void	handle_selection(t_mouse_data *m_data, t_data *data)
 {
 	data->is_selecting = 1;
 	data->select_start_x = m_data->x;
@@ -21,7 +21,7 @@ static void	handle_selection(t_mouse_data *m_data, t_data *data)
 	data->select_end_y = m_data->y;
 }
 
-static void	calculate_mouse_coordinates(t_mouse_data *m_data, t_data *data)
+void	calculate_mouse_coordinates(t_mouse_data *m_data, t_data *data)
 {
 	m_data->mouse_re = (m_data->x / (double)WIN_WIDTH - 0.5)
 		* 4.0 / data->zoom + data->offset_x;
@@ -29,7 +29,7 @@ static void	calculate_mouse_coordinates(t_mouse_data *m_data, t_data *data)
 		* 3.0 / data->zoom + data->offset_y;
 }
 
-static void	update_zoom_offset(t_mouse_data *m_data, t_data *data)
+void	update_zoom_offset(t_mouse_data *m_data, t_data *data)
 {
 	data->zoom *= m_data->zoom_factor;
 	data->offset_x = m_data->mouse_re
