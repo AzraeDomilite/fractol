@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   color_utils_2.c                                    :+:      :+:    :+:   */
+/*   color_palettes_4.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/21 15:51:02 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/21 15:51:02 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/22 21:36:02 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/22 21:36:02 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ void	dwell_gradient(t_gradient_params params, const int *counts,
 	int						k;
 	t_color					color_temp;
 
+	(void) data;
 	init_gradient_data(&gd, params);
 	if (counts[params.height * params.i + params.j] == params.maxiter)
 	{

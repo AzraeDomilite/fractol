@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 18:20:00 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 18:20:41 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/22 21:36:38 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/22 21:36:38 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,7 @@ void	*thread_draw_fractal(void *arg)
 	t_color_args		color_args;
 	int					y;
 
+	(void) color_args;
 	data = (t_data *)arg;
 	params.real_min = data->real_min;
 	params.imag_min = data->imag_min;

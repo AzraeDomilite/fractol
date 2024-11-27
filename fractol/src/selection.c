@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/21 13:50:59 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/21 13:51:21 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/22 21:40:47 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/22 21:40:47 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,6 @@ void	zoom_to_selection(t_data *data)
 	get_sorted_selection(data, &zoom);
 	if (zoom.x_start == zoom.x_end || zoom.y_start == zoom.y_end)
 		return ;
-	if (data->fractal_type == BUDDHABROT)
-		calculate_buddha_bounds(data, &zoom);
 	else
 	{
 		calculate_coordinates(data, &zoom);

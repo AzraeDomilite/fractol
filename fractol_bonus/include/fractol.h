@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   color_palettes_1.c                                 :+:      :+:    :+:   */
+/*   fractol.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/22 17:38:11 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/22 17:38:11 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/22 21:35:27 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/22 21:35:27 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,8 @@
 /*                                   WINDOW                                   */
 /* ************************************************************************** */
 
-# define WIN_WIDTH 1300
-# define WIN_HEIGHT 800
+# define WIN_WIDTH 1280
+# define WIN_HEIGHT 720
 # define FULLSCREEN_WIDTH	3840
 # define FULLSCREEN_HEIGHT	2160
 
@@ -83,7 +83,7 @@ burningship|lyapunov|newton|buddhabrot>\n"
 /*                             THREADING PARAMETERS                           */
 /* ************************************************************************** */
 
-# define NUM_THREADS 8
+# define NUM_THREADS 12
 # define SAMPLES_PER_THREAD 500000
 # define THREAD_STACK_SIZE 16777216
 
@@ -735,8 +735,6 @@ void					draw_zoom_info(t_data *data, int *y);
 void					draw_iter_info(t_data *data, int *y);
 
 /* ui_drawing_2.c */
-void					draw_rgb_info(t_data *data, int *y);
-char					*create_rgb_string(t_data *data);
 void					draw_fractal_type(t_data *data, int *y);
 void					draw_palette_type(t_data *data, int *y);
 void					draw_selection_rectangle(t_data *data);

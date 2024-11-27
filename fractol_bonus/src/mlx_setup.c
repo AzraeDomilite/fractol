@@ -6,7 +6,7 @@
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/20 12:11:37 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:11:37 by blucken          ###   ########.ch       */
+/*   Updated: 2024/11/22 21:45:59 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,5 +51,7 @@ void	exit_fractol(t_data *data)
 		mlx_destroy_image(data->mlx, data->img);
 	if (data->win && data->mlx)
 		mlx_destroy_window(data->mlx, data->win);
+	if (data->mlx)
+		data->mlx = NULL;
 	exit(EXIT_SUCCESS);
 }

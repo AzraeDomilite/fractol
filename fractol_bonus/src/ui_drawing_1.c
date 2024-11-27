@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/21 18:46:00 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/21 18:46:00 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/22 21:35:12 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/22 21:35:12 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,6 @@ void	draw_parameters(t_data *data, int *y)
 {
 	draw_zoom_info(data, y);
 	draw_iter_info(data, y);
-	draw_rgb_info(data, y);
 	draw_fractal_type(data, y);
 	draw_palette_type(data, y);
 }

@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 12:11:37 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 12:11:37 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/22 21:42:49 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/22 21:42:49 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,10 +46,10 @@ void	reset_view(t_data *data)
 
 void	exit_fractol(t_data *data)
 {
-	pthread_mutex_destroy(&data->histogram_mutex);
-	if (data->img)
 		mlx_destroy_image(data->mlx, data->img);
 	if (data->win && data->mlx)
 		mlx_destroy_window(data->mlx, data->win);
+	if (data->mlx)
+		data->mlx = NULL;
 	exit(EXIT_SUCCESS);
 }

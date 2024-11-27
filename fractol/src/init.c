@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 16:20:37 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/22 17:58:41 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/22 21:39:18 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/22 21:42:42 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,10 +50,6 @@ void	init_data_params(t_data *data)
 
 void	init_data_dimensions(t_data *data)
 {
-	data->buddha_real_min = BUDDHA_REAL_MIN;
-	data->buddha_real_max = BUDDHA_REAL_MAX;
-	data->buddha_imag_min = BUDDHA_IMAG_MIN;
-	data->buddha_imag_max = BUDDHA_IMAG_MAX;
 	data->original_width = WIN_WIDTH;
 	data->original_height = WIN_HEIGHT;
 	data->width = WIN_WIDTH;

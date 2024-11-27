@@ -12,34 +12,6 @@
 
 #include "../include/fractol.h"
 
-void	draw_rgb_info(t_data *data, int *y)
-{
-	char	*str;
-
-	str = create_rgb_string(data);
-	if (str)
-	{
-		mlx_string_put(data->mlx, data->win, 10, *y, COLOR_WHITE, str);
-		free(str);
-	}
-	*y += 20;
-}
-
-char	*create_rgb_string(t_data *data)
-{
-	char	*str;
-
-	str = ft_strjoin("RGB: (", ft_itoa(data->base_color.r));
-	if (!str)
-		return (NULL);
-	str = str_join_free(str, ft_strdup(", "));
-	str = str_join_free(str, ft_itoa(data->base_color.g));
-	str = str_join_free(str, ft_strdup(", "));
-	str = str_join_free(str, ft_itoa(data->base_color.b));
-	str = str_join_free(str, ft_strdup(")"));
-	return (str);
-}
-
 void	draw_fractal_type(t_data *data, int *y)
 {
 	const char	*fractal_names[] = {

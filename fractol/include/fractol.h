@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   event_handlers.c                                   :+:      :+:    :+:   */
+/*   fractol.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/22 18:09:53 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/22 18:10:56 by blucken          ###   ########.ch       */
+/*   Created: 2024/11/22 21:41:41 by blucken           #+#    #+#             */
+/*   Updated: 2024/11/22 21:41:41 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,6 @@
 # include <unistd.h>
 # include <math.h>
 # include <stdlib.h>
-# include <pthread.h>
-# include <complex.h>
 
 /* ************************************************************************** */
 /*                                   WINDOW                                   */
@@ -71,25 +69,6 @@ burningship|newton>\n"
 /* Mandelbrot View Offset */
 # define MANDEL_OFFSET_X -0.5
 # define MANDEL_OFFSET_Y 0.0
-
-/* ************************************************************************** */
-/*                                BUDDHABROT                                  */
-/* ************************************************************************** */
-
-# define BUDDHA_REAL_MIN -2.5
-# define BUDDHA_REAL_MAX 1.0
-# define BUDDHA_IMAG_MIN -1.5
-# define BUDDHA_IMAG_MAX 1.5
-# define BUDDHA_SAMPLE_RANGE_X 3.0
-# define BUDDHA_SAMPLE_RANGE_Y 3.0
-# define BUDDHA_OFFSET_X -2.0
-# define BUDDHA_OFFSET_Y -1.5
-
-/* ************************************************************************** */
-/*                                  LYAPUNOV                                  */
-/* ************************************************************************** */
-
-# define LYAPUNOV_SEQUENCE "AAAA"
 
 /* ************************************************************************** */
 /*                                   COLORS                                   */
@@ -200,9 +179,7 @@ typedef enum e_fractal_type
 	MANDELBROT,
 	TRICORN,
 	BURNING_SHIP,
-	LYAPUNOV,
-	NEWTON,
-	BUDDHABROT
+	NEWTON
 }	t_fractal_type;
 
 typedef struct s_trajectory
@@ -228,7 +205,6 @@ typedef enum e_palette_type
 	PALETTE_EXP_CYCLIC_LCH_NO_SHADING,
 	PALETTE_EXP_CYCLIC_LCH_SHADING,
 	PALETTE_DERIVATIVE_BAILOUT,
-	PALETTE_DWELL_GRADIENT,
 	PALETTE_CUSTOM_INTERIOR
 }	t_palette_type;
 
@@ -685,8 +661,6 @@ void					draw_zoom_info(t_data *data, int *y);
 void					draw_iter_info(t_data *data, int *y);
 
 /* ui_drawing_2.c */
-void					draw_rgb_info(t_data *data, int *y);
-char					*create_rgb_string(t_data *data);
 void					draw_fractal_type(t_data *data, int *y);
 void					draw_palette_type(t_data *data, int *y);
 void					draw_selection_rectangle(t_data *data);
@@ -742,10 +716,6 @@ int						is_in_main_cardioid(double x, double y);
 int						is_in_period2_bulb(double x, double y);
 
 /* utils_3.c */
-void					update_histogram_point(t_data *data,
-							int screen_x, int screen_y);
-void					calculate_screen_coords(double real, double imag,
-							int *screen_x, int *screen_y);
 void					move_offset(t_data *data, double x_factor,
 							double y_factor);
 void					handle_zoom(int key, t_data *data);

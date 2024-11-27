@@ -6,7 +6,7 @@
 /*   By: blucken <blucken@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/20 18:56:42 by blucken           #+#    #+#             */
-/*   Updated: 2024/11/20 18:56:42 by blucken          ###   ########.ch       */
+/*   Updated: 2024/11/22 21:36:23 by blucken          ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 void	init_gradient_data(t_gradient_data *gd, t_gradient_params params)
 {
+	(void) params;
 	gd->color.r = 0.0f;
 	gd->color.g = 0.0f;
 	gd->color.b = 0.0f;
